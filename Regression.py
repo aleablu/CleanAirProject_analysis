@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 
 # parameters
-BATCH_SIZE = 16
+BATCH_SIZE = 64
 
 # load data
 csv_path = 'data/merged_daily.csv'
@@ -35,9 +35,11 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
     print("-- RUNNING ON THE CPU --")
+
 # init network
 net = RegressiveCNN()
 net.to(device)
+
 # init loss function and optimizer for backpropagation
 criterion = nn.MSELoss()
 optimizer = Adam(net.parameters(), lr=0.001)
@@ -47,7 +49,7 @@ epochs = 20
 for epoch in range(epochs):
     print('Epoch {}'.format(epoch))
     losses = []
-    for batch_index, batch in tqdm(enumerate(train_loader)):
+    for batch_index, batch in enumerate(tqdm(train_loader)):
         # get image, weather params and pm label and move these
         # tensors to gpu if available
         imgs = batch['image'].to(device)
@@ -59,9 +61,8 @@ for epoch in range(epochs):
 
         # get output from network
         predicted_pms = net(imgs.float(), weathers)
- 
         # calc loss and backpropagate
-        loss = criterion(predicted_pms, pms.reshape(BATCH_SIZE,1).float())
+        loss = criterion(predicted_pms, pms.reshape(len(batch['pm_label']), 1).float())
         loss.backward()
         optimizer.step()
 
