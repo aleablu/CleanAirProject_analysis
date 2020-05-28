@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 
 # parameters
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 
 # load data
 csv_path = 'data/merged_daily.csv'
@@ -44,7 +44,7 @@ net.to(device)
 criterion = nn.MSELoss()
 optimizer = Adam(net.parameters(), lr=0.001)
 
-epochs = 20
+epochs = 10000
 
 for epoch in range(epochs):
     print('Epoch {}'.format(epoch))
