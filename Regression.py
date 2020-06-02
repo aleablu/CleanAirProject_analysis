@@ -8,7 +8,7 @@ import numpy as np
 from Network import RegressiveCNN
 from CleanAirDataset import CleanAirDataset
 from tqdm import tqdm
-
+from torchvision import transforms
 
 # parameters
 BATCH_SIZE = 128

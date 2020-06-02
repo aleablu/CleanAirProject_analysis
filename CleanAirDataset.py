@@ -43,13 +43,17 @@ class CleanAirDataset(data.Dataset):
         # get label, convert to to tensor then to column array
         pm_label = torch.from_numpy(np.asarray(self.data_df.iloc[idx, 1]))
         pm_label = pm_label.reshape(-1, 1)
-
+        #print(image)
+        if self.transform:
+            image = self.transform(image)
+            #weather = self.transform(weather)
+            #pm_label = self.transform(pm_label)
+        #print(image)
         sample = {
                 'image': image,
                 'weather_data': weather,
                 'pm_label': pm_label
         }
 
-        if self.transform:
-            sample = self.transform(sample)
+      
         return sample
