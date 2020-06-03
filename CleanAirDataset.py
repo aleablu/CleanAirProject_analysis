@@ -9,9 +9,14 @@ from skimage import io
 class CleanAirDataset(data.Dataset):
 
     def __init__(self, csv_path, imgs_path, transform=None):
-        self.data_df = pd.read_csv(csv_path)
         self.imgs_path = imgs_path
         self.transform = transform
+        # normalize dataset
+        df = pd.read_csv(csv_path)
+        for col in df.columns:
+            if col not in ['time', 'cell_id']:
+                df[col] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
+        self.data_df = df
 
     # returns number of samples in this dataset
     def __len__(self):
@@ -25,10 +30,9 @@ class CleanAirDataset(data.Dataset):
         
         img_path = os.path.join(self.imgs_path, img_fname)
         image = io.imread(img_path)
+
         if self.transform:
             image = self.transform(image)
-        # convert numpy image to tensor
-        #print(image.size())
 
         weather = self.data_df.iloc[idx, 3:]
         # convert weather data to column vector
@@ -45,5 +49,4 @@ class CleanAirDataset(data.Dataset):
                 'weather_data': weather,
                 'pm_label': pm_label
         }
-
         return sample

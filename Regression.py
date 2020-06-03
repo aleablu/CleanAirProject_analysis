@@ -15,11 +15,13 @@ BATCH_SIZE = 128
 
 # load data
 csv_path = 'data/merged_daily.csv'
-imgs_path = 'data/cells_images'
-normalize = transforms.Normalize(mean=[0.5,0.5,0.5],std=[0.5,0.5,0.5])
+imgs_path = 'data/cells_images/resized_64'
+normalize = transforms.Normalize(
+            mean=[0.5, 0.5, 0.5],
+            std=[0.5, 0.5, 0.5])
 transform = transforms.Compose(
         [transforms.ToTensor(),  # transform to tensor --> [0,1]
-            ])  # transform with mean and std 0.5 --> [-1, 1]
+            normalize])  # transform with mean and std 0.5 --> [-1, 1]
 dataset = CleanAirDataset(csv_path, imgs_path, transform=transform)
 
 # split: train 80%, test 20%
@@ -58,7 +60,7 @@ for epoch in range(epochs):
         imgs = batch['image'].to(device)
         weathers = batch['weather_data'].to(device)
         pms = batch['pm_label'].to(device)
-
+        #print(imgs)
         # set parameter's gradients to zero
         optimizer.zero_grad()
 
