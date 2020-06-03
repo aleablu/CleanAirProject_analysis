@@ -32,10 +32,7 @@ class RegressiveCNN(nn.Module):
         # input features (vettore colonna) + 5 parametri meteo
         self.fc1 = nn.Linear(in_features=24*16*16, out_features=256)
         self.fc2 = nn.Linear(in_features=256, out_features=256)
-        self.fc3 = nn.Linear(in_features=256, out_features=256)
-        self.fc4 = nn.Linear(in_features=256, out_features=256)
-        self.fc5 = nn.Linear(in_features=256, out_features=256)
-        self.fc6 = nn.Linear(in_features=256, out_features=1)
+        self.fc3 = nn.Linear(in_features=256, out_features=1)
 
     def show_image(self, img):
         npimg = img
@@ -78,8 +75,5 @@ class RegressiveCNN(nn.Module):
         output = self.fc1(output)
         output = self.fc2(output)
         output = self.fc3(output)
-        output = self.fc4(output)
-        output = self.fc5(output)
-        output = self.fc6(output)
 
         return output

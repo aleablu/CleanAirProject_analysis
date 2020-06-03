@@ -16,7 +16,11 @@ BATCH_SIZE = 128
 # load data
 csv_path = 'data/merged_daily.csv'
 imgs_path = 'data/cells_images'
-dataset = CleanAirDataset(csv_path, imgs_path)
+normalize = transforms.Normalize(mean=[0.5,0.5,0.5],std=[0.5,0.5,0.5])
+transform = transforms.Compose(
+        [transforms.ToTensor(),  # transform to tensor --> [0,1]
+            ])  # transform with mean and std 0.5 --> [-1, 1]
+dataset = CleanAirDataset(csv_path, imgs_path, transform=transform)
 
 # split: train 80%, test 20%
 train_length = int(np.floor(len(dataset) * 0.8))
@@ -24,8 +28,8 @@ test_length = len(dataset) - train_length
 train, test = tud.random_split(dataset, [train_length, test_length])
 
 # init data loaders
-train_loader = tud.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=6)
-test_loader = tud.DataLoader(test, batch_size=BATCH_SIZE, shuffle=True, num_workers=6)
+train_loader = tud.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+test_loader = tud.DataLoader(test, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 
 
 # If possible runs on GPU
@@ -45,7 +49,6 @@ criterion = nn.MSELoss()
 optimizer = Adam(net.parameters(), lr=0.001)
 
 epochs = 10000
-
 for epoch in range(epochs):
     print('Epoch {}'.format(epoch))
     losses = []

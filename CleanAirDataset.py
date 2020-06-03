@@ -25,14 +25,10 @@ class CleanAirDataset(data.Dataset):
         
         img_path = os.path.join(self.imgs_path, img_fname)
         image = io.imread(img_path)
-
-        # swap img dimensions, to fit torch standard
-        # numpy image: H x W x C
-        # torch image: C X H X W
-        image = image.transpose((2, 0, 1))
-        
+        if self.transform:
+            image = self.transform(image)
         # convert numpy image to tensor
-        image = torch.from_numpy(image)
+        #print(image.size())
 
         weather = self.data_df.iloc[idx, 3:]
         # convert weather data to column vector
@@ -43,17 +39,11 @@ class CleanAirDataset(data.Dataset):
         # get label, convert to to tensor then to column array
         pm_label = torch.from_numpy(np.asarray(self.data_df.iloc[idx, 1]))
         pm_label = pm_label.reshape(-1, 1)
-        #print(image)
-        if self.transform:
-            image = self.transform(image)
-            #weather = self.transform(weather)
-            #pm_label = self.transform(pm_label)
-        #print(image)
+
         sample = {
                 'image': image,
                 'weather_data': weather,
                 'pm_label': pm_label
         }
 
-      
         return sample
