@@ -5,16 +5,27 @@ import torch.utils.data as tud
 
 import numpy as np
 from datetime import datetime
+import argparse
 
 from Network import RegressiveCNN
 from CleanAirDataset import CleanAirDataset
 from tqdm import tqdm
 from torchvision import transforms
 
+# parse command line options
+parser = argparse.ArgumentParser()
+parser.add_argument('-s', '--save-model', action='store_true', dest='save_model', default=False)
+#parser.add_argument('--use-model', type=str, dest='model_to_use', default=None)
+parser.add_argument('--learning-rate', type=float, dest='lr', default=0.001)
+parser.add_argument('--batch-size', type=int, dest='batch_size', default=128)
+parser.add_argument('--epochs', type=int, dest='epochs', default=20)
+
+args = parser.parse_args()
 # parameters
-BATCH_SIZE = 128
-LEARNING_RATE = 0.001
-EPOCHS = 5
+BATCH_SIZE = args.batch_size
+LEARNING_RATE = args.lr
+EPOCHS = args.epochs
+SAVE_MODEL = args.save_model
 # load data
 csv_path = 'data/merged_daily.csv'
 imgs_path = 'data/cells_images/resized_64'
@@ -71,11 +82,12 @@ for epoch in range(EPOCHS):
         # store loss value
         losses.append(float(loss))
     print('Mean loss = {}'.format(np.mean(losses)))
-
-time = datetime.now().strftime("%d_%m_%y_%H_%M")
-model_fname = 'models/regressive_cnn_' + time + '.ptm'
-torch.save(net.state_dict(), model_fname)
-print('Training ended, saving model in {}'.format(model_fname))
+print('\nTraining end')
+if SAVE_MODEL:
+    time = datetime.now().strftime("%d_%m_%y_%H_%M")
+    model_fname = 'models/regressive_cnn_' + time + '.ptm'
+    torch.save(net.state_dict(), model_fname)
+    print('saving model in {}'.format(model_fname))
 
 print('\nBegin testing!')
 mse_total = 0
