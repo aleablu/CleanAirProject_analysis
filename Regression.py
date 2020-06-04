@@ -14,8 +14,8 @@ from torchvision import transforms
 
 # parse command line options
 parser = argparse.ArgumentParser()
-parser.add_argument('-s', '--save-model', action='store_true', dest='save_model', default=False)
-#parser.add_argument('--use-model', type=str, dest='model_to_use', default=None)
+parser.add_argument('-s', '--save-model', action='store_true',
+                    dest='save_model', default=False)
 parser.add_argument('--learning-rate', type=float, dest='lr', default=0.001)
 parser.add_argument('--batch-size', type=int, dest='batch_size', default=128)
 parser.add_argument('--epochs', type=int, dest='epochs', default=20)
@@ -40,7 +40,7 @@ train, test = tud.random_split(dataset, [train_length, test_length])
 
 # init data loaders
 train_loader = tud.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
-test_loader = tud.DataLoader(test, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+test_loader = tud.DataLoader(test, batch_size=1, shuffle=True, num_workers=4)
 
 
 # If possible runs on GPU

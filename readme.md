@@ -7,4 +7,4 @@ Execute "Regression.py" to train the network and see loss function values.
 **Command line options**:
 
 - -s, --save-model --> if present this flag forces saving of trained model
-- --learning-rate, --batch-size, --epochs --> to specify parameters to use
+- --learning-rate, --batch-size, --epochs --> to specify parameters to use, defaults are 0.001, 128, 20

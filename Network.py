@@ -30,7 +30,9 @@ class RegressiveCNN(nn.Module):
         # qua comincia MLP, dopo layer di Flatten ho output.shape[1]*output.shape[2]*output.shape[3]
         # input features (vettore colonna) + 5 parametri meteo
         self.fc1 = nn.Linear(in_features=24*2*2 + 5, out_features=64)
+        self.dropout1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(in_features=64, out_features=32)
+        self.dropout2 = nn.Dropout(0.5)
         self.fc3 = nn.Linear(in_features=32, out_features=1)
 
     def show_image(self, img):
@@ -72,7 +74,9 @@ class RegressiveCNN(nn.Module):
         output = torch.cat((output, weather), dim=1)
 
         output = self.fc1(output)
+        output = self.dropout1(output)
         output = self.fc2(output)
+        output = self.dropout2(output)
         output = self.fc3(output)
 
         return output
