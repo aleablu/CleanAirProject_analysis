@@ -4,6 +4,7 @@ from torch.optim import Adam
 import torch.utils.data as tud
 
 import numpy as np
+from datetime import datetime
 
 from Network import RegressiveCNN
 from CleanAirDataset import CleanAirDataset
@@ -12,16 +13,13 @@ from torchvision import transforms
 
 # parameters
 BATCH_SIZE = 128
-
+LEARNING_RATE = 0.001
+EPOCHS = 5
 # load data
 csv_path = 'data/merged_daily.csv'
 imgs_path = 'data/cells_images/resized_64'
-normalize = transforms.Normalize(
-            mean=[0.5, 0.5, 0.5],
-            std=[0.5, 0.5, 0.5])
-transform = transforms.Compose(
-        [transforms.ToTensor(),  # transform to tensor --> [0,1]
-            normalize])  # transform with mean and std 0.5 --> [-1, 1]
+# transforms img in Tensor, backend uses Pillow that normalizes img in [0,1]
+transform = transforms.ToTensor()
 dataset = CleanAirDataset(csv_path, imgs_path, transform=transform)
 
 # split: train 80%, test 20%
@@ -37,10 +35,10 @@ test_loader = tud.DataLoader(test, batch_size=BATCH_SIZE, shuffle=True, num_work
 # If possible runs on GPU
 if torch.cuda.is_available():
     device = torch.device("cuda:0")
-    print('running on {}'.format(torch.cuda.get_device_name(0)))
+    print('RUNNING ON {}'.format(torch.cuda.get_device_name(0)))
 else:
     device = torch.device("cpu")
-    print("-- RUNNING ON THE CPU --")
+    print("-- RUNNING ON CPU --")
 
 # init network
 net = RegressiveCNN()
@@ -48,10 +46,9 @@ net.to(device)
 
 # init loss function and optimizer for backpropagation
 criterion = nn.MSELoss()
-optimizer = Adam(net.parameters(), lr=0.001)
+optimizer = Adam(net.parameters(), lr=LEARNING_RATE)
 
-epochs = 10000
-for epoch in range(epochs):
+for epoch in range(EPOCHS):
     print('Epoch {}'.format(epoch))
     losses = []
     for batch_index, batch in enumerate(tqdm(train_loader)):
@@ -60,7 +57,7 @@ for epoch in range(epochs):
         imgs = batch['image'].to(device)
         weathers = batch['weather_data'].to(device)
         pms = batch['pm_label'].to(device)
-        #print(imgs)
+
         # set parameter's gradients to zero
         optimizer.zero_grad()
 
@@ -74,3 +71,25 @@ for epoch in range(epochs):
         # store loss value
         losses.append(float(loss))
     print('Mean loss = {}'.format(np.mean(losses)))
+
+time = datetime.now().strftime("%d_%m_%y_%H_%M")
+model_fname = 'models/regressive_cnn_' + time + '.ptm'
+torch.save(net.state_dict(), model_fname)
+print('Training ended, saving model in {}'.format(model_fname))
+
+print('\nBegin testing!')
+mse_total = 0
+for batch_index, batch in enumerate(tqdm(test_loader)):
+    imgs = batch['image'].to(device)
+    weathers = batch['weather_data'].to(device)
+    pms = batch['pm_label'].to(device)
+
+    predicted = net(imgs.float(), weathers)
+    mse = 0
+    for i in range(len(pms)):
+        mse += (pms[i] - predicted[i]) ** 2
+    mse /= len(pms)
+    mse_total += mse
+mse_total /= len(test_loader)
+
+print('mean MSE value on test data = {}'.format(float(mse_total)))
