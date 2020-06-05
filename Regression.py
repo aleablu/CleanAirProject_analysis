@@ -13,6 +13,8 @@ from tqdm import tqdm
 from torchvision import transforms
 
 import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
 
 # parse command line options
 parser = argparse.ArgumentParser()
@@ -29,7 +31,7 @@ LEARNING_RATE = args.lr
 EPOCHS = args.epochs
 SAVE_MODEL = args.save_model
 # load data
-csv_path = 'data/merged_seasonally.csv'
+csv_path = 'data/merged_weekly.csv'
 imgs_path = 'data/cells_images/resized_64'
 # transforms img in Tensor, backend uses Pillow that normalizes img in [0,1]
 transform = transforms.ToTensor()
@@ -88,7 +90,7 @@ for epoch in range(EPOCHS):
         loss = criterion(predicted_pms, pms.reshape(len(batch['pm_label']), 1).float())
         loss.backward()
         optimizer.step()
-
+        fig = go.Figure()
         # store loss value
         losses.append(float(loss))
     mean_loss = np.mean(losses)
@@ -96,11 +98,14 @@ for epoch in range(EPOCHS):
     train_losses.append(mean_loss)
 
 print('\nTraining end')
-fig = px.line(x=range(0, EPOCHS), y=train_losses,
-              labels={'x': 'epochs', 'y': 'MSE loss'})
-fig.write_image('plots/train_loss_bs' + str(BATCH_SIZE) + '_lr'
-                + str(LEARNING_RATE) + '.png')
-print('train losses saved in plots')
+# fig.add_trace(px.line(x=range(0, EPOCHS), y=train_losses,
+#               labels={'x': 'epochs', 'y': 'MSE loss'}))
+# fig.add_trace(px.line(x=range(0, EPOCHS), y=train_losses,
+#               labels={'x': 'epochs', 'y': 'MSE loss'}))
+              
+# fig.write_image('plots/train_loss_bs' + str(BATCH_SIZE) + '_lr'
+#                 + str(LEARNING_RATE) + '.png')
+# print('train losses saved in plots')
 
 if SAVE_MODEL:
     time = datetime.now().strftime("%d_%m_%y_%H_%M")
@@ -110,14 +115,22 @@ if SAVE_MODEL:
 
 print('\nBegin testing!')
 mse_total = 0
+orig, pre = [], []
+orig_de, pre_de = [], []
 for batch_index, batch in enumerate(tqdm(test_loader)):
     imgs = batch['image'].to(device)
     weathers = batch['weather_data'].to(device)
     pms = batch['pm_label'].to(device)
-
+    
+    orig.append(torch.flatten(pms.cpu().detach()))
     predicted = net(imgs.float(), weathers)
+    pre.append(torch.flatten(predicted.cpu().detach()))
+    
     predicted = dataset.min_pm + pm_range * predicted
     pms = dataset.min_pm + pm_range * pms
+    orig_de.append(torch.flatten(pms.cpu().detach()))
+    pre_de.append(torch.flatten(predicted.cpu().detach()))
+
     mse = 0
     for i in range(len(pms)):
         mse += (pms[i] - predicted[i]) ** 2
@@ -125,4 +138,23 @@ for batch_index, batch in enumerate(tqdm(test_loader)):
     mse_total += mse
 mse_total /= len(test_loader)
 
-print('mean MSE value on test data = {}'.format(float(mse_total)))
+print('mean MSE value on test data = {}\n'.format(float(mse_total)))
+fig = go.Figure()
+fig.update_layout(title='Normalized')
+fig.add_trace(go.Scatter(x=np.arange(0, 50), y=np.array(orig),
+                    mode='lines+markers',
+                    name='original'))
+fig.add_trace(go.Scatter(x=np.arange(0, 50), y=np.array(pre),
+                    mode='lines+markers',
+                    name='predicted'))
+fig.write_image('plots/normalized.png')
+
+fig = go.Figure()
+fig.update_layout(title='Denormalized')
+fig.add_trace(go.Scatter(x=np.arange(0, 50), y=np.array(orig_de),
+                    mode='lines+markers',
+                    name='original'))
+fig.add_trace(go.Scatter(x=np.arange(0, 50), y=np.array(pre_de),
+                    mode='lines+markers',
+                    name='predicted'))
+fig.write_image('plots/denormalized.png')
