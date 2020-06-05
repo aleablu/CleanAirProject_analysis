@@ -21,19 +21,19 @@ class RegressiveCNN(nn.Module):
 
         self.conv3 = nn.Conv2d(in_channels=12, out_channels=24, kernel_size=3, stride=1, padding=1)
         self.relu3 = nn.ReLU()  # output.shape = 24x10x10
-        self.pool3 = nn.MaxPool2d(kernel_size=2)  # output.shape = 24x5x5
+        self.pool3 = nn.MaxPool2d(kernel_size=3)  # output.shape = 24x3x3
 
         self.conv4 = nn.Conv2d(in_channels=24, out_channels=24, kernel_size=3, stride=1, padding=1)
-        self.relu4 = nn.ReLU()  # output.shape = 24x5x5
-        self.pool4 = nn.MaxPool2d(kernel_size=2)  # output.shape = 24x2x2
+        self.relu4 = nn.ReLU()  # output.shape = 24x3x3
+        self.pool4 = nn.MaxPool2d(kernel_size=2)  # output.shape = 24x1x1
 
         # qua comincia MLP, dopo layer di Flatten ho output.shape[1]*output.shape[2]*output.shape[3]
         # input features (vettore colonna) + 5 parametri meteo
-        self.fc1 = nn.Linear(in_features=24*2*2 + 5, out_features=64)
-        self.dropout1 = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(in_features=64, out_features=32)
-        self.dropout2 = nn.Dropout(0.5)
-        self.fc3 = nn.Linear(in_features=32, out_features=1)
+        self.fc1 = nn.Linear(in_features=24*1*1 + 5, out_features=16)
+        self.dropout1 = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(in_features=16, out_features=8)
+        self.dropout2 = nn.Dropout(0.2)
+        self.fc3 = nn.Linear(in_features=8, out_features=1)
 
     def show_image(self, img):
         npimg = img
@@ -44,32 +44,32 @@ class RegressiveCNN(nn.Module):
         output = self.relu1(output)
         output = self.pool1(output)
         # self.show_image(to_pil(output[0].cpu()))
-        #print('pool1 --> {}'.format(output.shape))
+        # print('pool1 --> {}'.format(output.shape))
 
         output = self.conv2(output)
         output = self.relu2(output)
         output = self.pool2(output)
         # self.show_image(to_pil(output[0].cpu()))
-        #print('pool2 --> {}'.format(output.shape))
+        # print('pool2 --> {}'.format(output.shape))
 
         output = self.conv3(output)
         output = self.relu3(output)
         output = self.pool3(output)
         # self.show_image(to_pil(output[0].cpu()))
-        #print('pool3 --> {}'.format(output.shape))
+        # print('pool3 --> {}'.format(output.shape))
 
         output = self.conv4(output)
         output = self.relu4(output)
         output = self.pool4(output)
         # self.show_image(to_pil(output[0].cpu()))
-        #print('pool4 --> {}'.format(output.shape))
+        # print('pool4 --> {}'.format(output.shape))
 
         # trasformo in vettore colonna tramite layer di flatten sia la
         # feature map che i dati meteo
 
         output = torch.flatten(output, start_dim=1)
         weather = torch.flatten(weather, start_dim=1)
-        #print(output.shape)
+        # print(output.shape)
         # mi aspetto che weather sia un vettore colonna con i dati meteo
         output = torch.cat((output, weather), dim=1)
 

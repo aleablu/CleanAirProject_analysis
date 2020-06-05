@@ -27,7 +27,7 @@ class CleanAirDataset(data.Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         img_fname = str(self.data_df.iloc[idx, 2]) + '.png'
-        
+
         img_path = os.path.join(self.imgs_path, img_fname)
         image = io.imread(img_path)
 

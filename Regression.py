@@ -27,7 +27,7 @@ LEARNING_RATE = args.lr
 EPOCHS = args.epochs
 SAVE_MODEL = args.save_model
 # load data
-csv_path = 'data/merged_daily.csv'
+csv_path = 'data/merged_seasonally.csv'
 imgs_path = 'data/cells_images/resized_64'
 # transforms img in Tensor, backend uses Pillow that normalizes img in [0,1]
 transform = transforms.ToTensor()
@@ -36,8 +36,10 @@ dataset = CleanAirDataset(csv_path, imgs_path, transform=transform)
 # split: train 80%, test 20%
 train_length = int(np.floor(len(dataset) * 0.8))
 test_length = len(dataset) - train_length
-train, test = tud.random_split(dataset, [train_length, test_length])
-
+# split data sequentially, no random
+train = tud.Subset(dataset, range(0, train_length))
+test = tud.Subset(dataset, range(train_length, len(dataset)))
+print(len(train), len(test))
 # init data loaders
 train_loader = tud.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 test_loader = tud.DataLoader(test, batch_size=1, shuffle=True, num_workers=4)
