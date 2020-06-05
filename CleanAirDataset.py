@@ -11,12 +11,16 @@ class CleanAirDataset(data.Dataset):
     def __init__(self, csv_path, imgs_path, transform=None):
         self.imgs_path = imgs_path
         self.transform = transform
-        # normalize dataset
         df = pd.read_csv(csv_path)
+        self.max_pm = df['num_particles'].max()
+        self.min_pm = df['num_particles'].min()
+        # normalize dataset
         for col in df.columns:
             if col not in ['time', 'cell_id']:
                 df[col] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
         self.data_df = df
+
+
 
     # returns number of samples in this dataset
     def __len__(self):

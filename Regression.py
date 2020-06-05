@@ -60,7 +60,7 @@ net.to(device)
 # init loss function and optimizer for backpropagation
 criterion = nn.MSELoss()
 optimizer = Adam(net.parameters(), lr=LEARNING_RATE)
-
+pm_range = dataset.max_pm - dataset.min_pm
 for epoch in range(EPOCHS):
     print('Epoch {}'.format(epoch))
     losses = []
@@ -76,6 +76,11 @@ for epoch in range(EPOCHS):
 
         # get output from network
         predicted_pms = net(imgs.float(), weathers)
+
+        # denormalize predicted and label pms
+        predicted_pms = dataset.min_pm + pm_range * predicted_pms
+        pms = dataset.min_pm + pm_range * pms
+        
         # calc loss and backpropagate
         loss = criterion(predicted_pms, pms.reshape(len(batch['pm_label']), 1).float())
         loss.backward()
@@ -99,6 +104,8 @@ for batch_index, batch in enumerate(tqdm(test_loader)):
     pms = batch['pm_label'].to(device)
 
     predicted = net(imgs.float(), weathers)
+    predicted = dataset.min_pm + pm_range * predicted
+    pms = dataset.min_pm + pm_range * pms
     mse = 0
     for i in range(len(pms)):
         mse += (pms[i] - predicted[i]) ** 2
