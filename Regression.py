@@ -12,6 +12,8 @@ from CleanAirDataset import CleanAirDataset
 from tqdm import tqdm
 from torchvision import transforms
 
+import plotly.express as px
+
 # parse command line options
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--save-model', action='store_true',
@@ -61,6 +63,7 @@ net.to(device)
 criterion = nn.MSELoss()
 optimizer = Adam(net.parameters(), lr=LEARNING_RATE)
 pm_range = dataset.max_pm - dataset.min_pm
+train_losses = []
 for epoch in range(EPOCHS):
     print('Epoch {}'.format(epoch))
     losses = []
@@ -88,8 +91,16 @@ for epoch in range(EPOCHS):
 
         # store loss value
         losses.append(float(loss))
-    print('Mean loss = {}'.format(np.mean(losses)))
+    mean_loss = np.mean(losses)
+    print('Mean loss = {}'.format(mean_loss))
+    train_losses.append(mean_loss)
+
 print('\nTraining end')
+fig = px.scatter(x=range(0, EPOCHS), y=train_losses, labels={'x': 'epochs', 'y': 'MSE loss'})
+time = datetime.now().strftime("%d_%m_%y_%H_%M")
+fig.write_image('plots/train_loss_' + time + '.png')
+print('train losses saved in plots')
+
 if SAVE_MODEL:
     time = datetime.now().strftime("%d_%m_%y_%H_%M")
     model_fname = 'models/regressive_cnn_' + time + '.ptm'
