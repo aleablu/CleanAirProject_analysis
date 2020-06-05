@@ -96,9 +96,10 @@ for epoch in range(EPOCHS):
     train_losses.append(mean_loss)
 
 print('\nTraining end')
-fig = px.scatter(x=range(0, EPOCHS), y=train_losses, labels={'x': 'epochs', 'y': 'MSE loss'})
-time = datetime.now().strftime("%d_%m_%y_%H_%M")
-fig.write_image('plots/train_loss_' + time + '.png')
+fig = px.line(x=range(0, EPOCHS), y=train_losses,
+              labels={'x': 'epochs', 'y': 'MSE loss'})
+fig.write_image('plots/train_loss_bs' + str(BATCH_SIZE) + '_lr'
+                + str(LEARNING_RATE) + '.png')
 print('train losses saved in plots')
 
 if SAVE_MODEL:
