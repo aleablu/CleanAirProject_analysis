@@ -132,7 +132,7 @@ print('\nTraining end')
 
 if SAVE_MODEL:
     time = datetime.now().strftime("%d_%m_%y_%H_%M")
-    model_fname = 'models/regressive_cnn_' + time + '.ptm'
+    model_fname = 'models/regressive_cnn_{}_{}_ptm'.format(time, TIME_FRAME)
     torch.save(net.state_dict(), model_fname)
     print('saving model in {}'.format(model_fname))
 
