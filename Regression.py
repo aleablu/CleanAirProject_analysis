@@ -12,9 +12,18 @@ from CleanAirDataset import CleanAirDataset
 from tqdm import tqdm
 from torchvision import transforms
 
-import plotly.express as px
-import plotly.graph_objects as go
-import pandas as pd
+import matplotlib.pyplot as plt
+
+
+def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
+    x = range(0, num_data_to_plot)
+    plt.clf()
+    plt.plot(x, labels[:num_data_to_plot], label='original')
+    plt.plot(x, predictions[:num_data_to_plot], label='predicted')
+    plt.title(title)
+    plt.legend()
+    plt.savefig('plots/predictions_{}_{}epochs_{}bs_{}.png'.format(TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
+
 
 # parse command line options
 parser = argparse.ArgumentParser()
@@ -23,6 +32,9 @@ parser.add_argument('-s', '--save-model', action='store_true',
 parser.add_argument('--learning-rate', type=float, dest='lr', default=0.001)
 parser.add_argument('--batch-size', type=int, dest='batch_size', default=128)
 parser.add_argument('--epochs', type=int, dest='epochs', default=20)
+parser.add_argument('--time-frame', type=str, dest='time', default='daily')
+parser.add_argument('-p', action='store_true',
+                    dest='make_plots', default=False)
 
 args = parser.parse_args()
 # parameters
@@ -30,8 +42,10 @@ BATCH_SIZE = args.batch_size
 LEARNING_RATE = args.lr
 EPOCHS = args.epochs
 SAVE_MODEL = args.save_model
+TIME_FRAME = args.time
+MAKE_PLOTS = args.make_plots
 # load data
-csv_path = 'data/merged_weekly.csv'
+csv_path = 'data/merged_{}.csv'.format(TIME_FRAME)
 imgs_path = 'data/cells_images/resized_64'
 # transforms img in Tensor, backend uses Pillow that normalizes img in [0,1]
 transform = transforms.ToTensor()
@@ -85,12 +99,12 @@ for epoch in range(EPOCHS):
         # denormalize predicted and label pms
         predicted_pms = dataset.min_pm + pm_range * predicted_pms
         pms = dataset.min_pm + pm_range * pms
-        
+
         # calc loss and backpropagate
         loss = criterion(predicted_pms, pms.reshape(len(batch['pm_label']), 1).float())
         loss.backward()
         optimizer.step()
-        fig = go.Figure()
+
         # store loss value
         losses.append(float(loss))
     mean_loss = np.mean(losses)
@@ -98,14 +112,6 @@ for epoch in range(EPOCHS):
     train_losses.append(mean_loss)
 
 print('\nTraining end')
-# fig.add_trace(px.line(x=range(0, EPOCHS), y=train_losses,
-#               labels={'x': 'epochs', 'y': 'MSE loss'}))
-# fig.add_trace(px.line(x=range(0, EPOCHS), y=train_losses,
-#               labels={'x': 'epochs', 'y': 'MSE loss'}))
-              
-# fig.write_image('plots/train_loss_bs' + str(BATCH_SIZE) + '_lr'
-#                 + str(LEARNING_RATE) + '.png')
-# print('train losses saved in plots')
 
 if SAVE_MODEL:
     time = datetime.now().strftime("%d_%m_%y_%H_%M")
@@ -121,16 +127,16 @@ for batch_index, batch in enumerate(tqdm(test_loader)):
     imgs = batch['image'].to(device)
     weathers = batch['weather_data'].to(device)
     pms = batch['pm_label'].to(device)
-    
+    # make predictions and store label + predicted
     orig.append(torch.flatten(pms.cpu().detach()))
     predicted = net(imgs.float(), weathers)
     pre.append(torch.flatten(predicted.cpu().detach()))
-    
+    # denormalize values, store them 
     predicted = dataset.min_pm + pm_range * predicted
     pms = dataset.min_pm + pm_range * pms
     orig_de.append(torch.flatten(pms.cpu().detach()))
     pre_de.append(torch.flatten(predicted.cpu().detach()))
-
+    # calc loss function MSE
     mse = 0
     for i in range(len(pms)):
         mse += (pms[i] - predicted[i]) ** 2
@@ -139,22 +145,7 @@ for batch_index, batch in enumerate(tqdm(test_loader)):
 mse_total /= len(test_loader)
 
 print('mean MSE value on test data = {}\n'.format(float(mse_total)))
-fig = go.Figure()
-fig.update_layout(title='Normalized')
-fig.add_trace(go.Scatter(x=np.arange(0, 50), y=np.array(orig),
-                    mode='lines+markers',
-                    name='original'))
-fig.add_trace(go.Scatter(x=np.arange(0, 50), y=np.array(pre),
-                    mode='lines+markers',
-                    name='predicted'))
-fig.write_image('plots/normalized.png')
-
-fig = go.Figure()
-fig.update_layout(title='Denormalized')
-fig.add_trace(go.Scatter(x=np.arange(0, 50), y=np.array(orig_de),
-                    mode='lines+markers',
-                    name='original'))
-fig.add_trace(go.Scatter(x=np.arange(0, 50), y=np.array(pre_de),
-                    mode='lines+markers',
-                    name='predicted'))
-fig.write_image('plots/denormalized.png')
+if MAKE_PLOTS:
+    plot_predictions(np.array(orig), np.array(pre), '{} normalized data'.format(TIME_FRAME), 100, 'norm')
+    plot_predictions(np.array(orig_de), np.array(pre_de), '{} denormalized data'.format(TIME_FRAME), 100, 'denorm')
+    print('\nPredictions plot saved!')
