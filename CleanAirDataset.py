@@ -20,8 +20,6 @@ class CleanAirDataset(data.Dataset):
                 df[col] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
         self.data_df = df
 
-
-
     # returns number of samples in this dataset
     def __len__(self):
         return self.data_df.shape[0]
@@ -30,7 +28,7 @@ class CleanAirDataset(data.Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        img_fname = str(int(self.data_df.iloc[idx, 2])) + '.png'
+        img_fname = str(self.data_df.iloc[idx, 2]) + '.png'
 
         img_path = os.path.join(self.imgs_path, img_fname)
         image = io.imread(img_path)
