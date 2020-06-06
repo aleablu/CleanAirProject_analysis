@@ -22,7 +22,19 @@ def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
     plt.plot(x, predictions[:num_data_to_plot], label='predicted')
     plt.title(title)
     plt.legend()
-    plt.savefig('plots/predictions_{}_{}epochs_{}bs_{}.png'.format(TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
+    plt.savefig('plots/predictions_{}_{}epochs_{}bs_{}.png'.format(
+                    TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
+
+
+def plot_train_loss(losses, fname=''):
+    x = range(0, EPOCHS, 1)
+    plt.clf()
+    plt.plot(x, losses)
+    plt.xlabel('epoch')
+    plt.ylabel('Train MSE')
+    plt.title('Train loss values, MSE')
+    plt.savefig('plots/train_loss_{}_{}epochs_{}bs_{}.png'.format(
+                    TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
 
 
 # parse command line options
@@ -63,7 +75,8 @@ test = tud.Subset(dataset, range(train_length, len(dataset)))
 print(len(train), len(test))
 
 # init data loaders
-train_loader = tud.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+train_loader = tud.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True,
+                              num_workers=4)
 test_loader = tud.DataLoader(test, batch_size=1, shuffle=True, num_workers=4)
 
 # If possible runs on GPU
@@ -104,7 +117,8 @@ for epoch in range(EPOCHS):
         pms = dataset.min_pm + pm_range * pms
 
         # calc loss and backpropagate
-        loss = criterion(predicted_pms, pms.reshape(len(batch['image']), 1).float())
+        loss = criterion(predicted_pms,
+                         pms.reshape(len(batch['pm_label']), 1).float())
         loss.backward()
         optimizer.step()
 
@@ -131,14 +145,19 @@ for batch_index, batch in enumerate(tqdm(test_loader)):
     weathers = batch['weather_data'].to(device)
     pms = batch['pm_label'].to(device)
     # make predictions and store label + predicted
-    orig.append(torch.flatten(pms.cpu().detach()))
     predicted = net(imgs.float(), weathers)
-    pre.append(torch.flatten(predicted.cpu().detach()))
-    # denormalize values, store them 
+    # pass tensors to cpu, to avoid wasting of gpu memory
+    pms = pms.cpu().detach().numpy().reshape(1)
+    predicted = predicted.cpu().detach().numpy().reshape(1)
+    # store values to plot
+    orig.append(pms)
+    pre.append(predicted)
+    # denormalize values
     predicted = dataset.min_pm + pm_range * predicted
     pms = dataset.min_pm + pm_range * pms
-    orig_de.append(torch.flatten(pms.cpu().detach()))
-    pre_de.append(torch.flatten(predicted.cpu().detach()))
+    # store to plot
+    orig_de.append(pms)
+    pre_de.append(predicted)
     # calc loss function MSE
     mse = 0
     for i in range(len(pms)):
@@ -149,6 +168,9 @@ mse_total /= len(test_loader)
 
 print('mean MSE value on test data = {}\n'.format(float(mse_total)))
 if MAKE_PLOTS:
-    plot_predictions(np.array(orig), np.array(pre), '{} normalized data'.format(TIME_FRAME), 100, 'norm')
-    plot_predictions(np.array(orig_de), np.array(pre_de), '{} denormalized data'.format(TIME_FRAME), 100, 'denorm')
+    plot_predictions(np.array(orig), np.array(pre),
+                     '{} normalized data'.format(TIME_FRAME), 100, 'norm')
+    plot_predictions(np.array(orig_de), np.array(pre_de),
+                     '{} denormalized data'.format(TIME_FRAME), 100, 'denorm')
+    plot_train_loss(train_losses)
     print('\nPredictions plot saved!')
