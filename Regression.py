@@ -44,9 +44,11 @@ EPOCHS = args.epochs
 SAVE_MODEL = args.save_model
 TIME_FRAME = args.time
 MAKE_PLOTS = args.make_plots
+
 # load data
 csv_path = 'data/merged_{}.csv'.format(TIME_FRAME)
 imgs_path = 'data/cells_images/resized_64'
+
 # transforms img in Tensor, backend uses Pillow that normalizes img in [0,1]
 transform = transforms.ToTensor()
 dataset = CleanAirDataset(csv_path, imgs_path, transform=transform)
@@ -54,14 +56,15 @@ dataset = CleanAirDataset(csv_path, imgs_path, transform=transform)
 # split: train 80%, test 20%
 train_length = int(np.floor(len(dataset) * 0.8))
 test_length = len(dataset) - train_length
+
 # split data sequentially, no random
 train = tud.Subset(dataset, range(0, train_length))
 test = tud.Subset(dataset, range(train_length, len(dataset)))
 print(len(train), len(test))
+
 # init data loaders
 train_loader = tud.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
 test_loader = tud.DataLoader(test, batch_size=1, shuffle=True, num_workers=4)
-
 
 # If possible runs on GPU
 if torch.cuda.is_available():
@@ -101,7 +104,7 @@ for epoch in range(EPOCHS):
         pms = dataset.min_pm + pm_range * pms
 
         # calc loss and backpropagate
-        loss = criterion(predicted_pms, pms.reshape(len(batch['pm_label']), 1).float())
+        loss = criterion(predicted_pms, pms.reshape(len(batch['image']), 1).float())
         loss.backward()
         optimizer.step()
 
