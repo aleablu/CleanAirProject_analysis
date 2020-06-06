@@ -1,0 +1,8 @@
+# nuova sessione
+tmux new -s mysession
+# attach to mysession
+tmux a -t mysession
+# remove all sessions exept current
+tmux kill-session -a
+# esci da sessione
+ctrl+b, d
