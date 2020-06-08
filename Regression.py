@@ -33,8 +33,8 @@ def plot_train_loss(losses, fname=''):
     plt.xlabel('epoch')
     plt.ylabel('Train MSE')
     plt.title('Train loss values, MSE')
-    plt.savefig('plots/train_loss_{}_{}epochs_{}bs_{}.png'.format(
-                    TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
+    plt.savefig('plots/train_loss_{}_{}epochs_{}bs_lr{}.png'.format(
+                    TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
 
 
 # parse command line options
@@ -47,8 +47,8 @@ parser.add_argument('--epochs', type=int, dest='epochs', default=20)
 parser.add_argument('--time-frame', type=str, dest='time', default='daily')
 parser.add_argument('-p', action='store_true',
                     dest='make_plots', default=False)
-
 args = parser.parse_args()
+
 # parameters
 BATCH_SIZE = args.batch_size
 LEARNING_RATE = args.lr
@@ -72,7 +72,8 @@ test_length = len(dataset) - train_length
 # split data sequentially, no random
 train = tud.Subset(dataset, range(0, train_length))
 test = tud.Subset(dataset, range(train_length, len(dataset)))
-print(len(train), len(test))
+print('Train set: {} samples\nTest set:  {} samples'
+      .format(len(train), len(test)))
 
 # init data loaders
 train_loader = tud.DataLoader(train, batch_size=BATCH_SIZE, shuffle=True,
@@ -123,7 +124,7 @@ for epoch in range(EPOCHS):
         optimizer.step()
 
         # store loss value
-        losses.append(float(loss))
+        losses.append(loss.item())
     mean_loss = np.mean(losses)
     print('Mean loss = {}'.format(mean_loss))
     train_losses.append(mean_loss)
@@ -146,27 +147,19 @@ for batch_index, batch in enumerate(tqdm(test_loader)):
     pms = batch['pm_label'].to(device)
     # make predictions and store label + predicted
     predicted = net(imgs.float(), weathers)
-    # pass tensors to cpu, to avoid wasting of gpu memory
-    pms = pms.cpu().detach().numpy().reshape(1)
-    predicted = predicted.cpu().detach().numpy().reshape(1)
-    # store values to plot
-    orig.append(pms)
-    pre.append(predicted)
+    orig.append(pms.item())
+    pre.append(predicted.item())
     # denormalize values
     predicted = dataset.min_pm + pm_range * predicted
     pms = dataset.min_pm + pm_range * pms
-    # store to plot
-    orig_de.append(pms)
-    pre_de.append(predicted)
-    # calc loss function MSE
-    mse = 0
-    for i in range(len(pms)):
-        mse += (pms[i] - predicted[i]) ** 2
-    mse /= len(pms)
-    mse_total += mse
+    # calc MSE value
+    mse_total += criterion(pms.reshape(1, 1).float(), predicted)
+    # store values to plot
+    orig_de.append(pms.item())
+    pre_de.append(predicted.item())
 mse_total /= len(test_loader)
-
 print('mean MSE value on test data = {}\n'.format(float(mse_total)))
+
 if MAKE_PLOTS:
     plot_predictions(np.array(orig), np.array(pre),
                      '{} normalized data'.format(TIME_FRAME), 100, 'norm')
