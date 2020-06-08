@@ -33,9 +33,9 @@ class RegressiveCNN(nn.Module):
         #self.dropout1 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(in_features=256, out_features=256)
         #self.dropout2 = nn.Dropout(0.2)
-        self.fc3 = nn.Linear(in_features=256, out_features=128)
-        self.fc4 = nn.Linear(in_features=128, out_features=64)
-        self.fc5 = nn.Linear(in_features=64, out_features=1)
+        self.fc3 = nn.Linear(in_features=256, out_features=256)
+        self.fc4 = nn.Linear(in_features=256, out_features=256)
+        self.fc5 = nn.Linear(in_features=256, out_features=1)
 
     def show_image(self, img):
         npimg = img
