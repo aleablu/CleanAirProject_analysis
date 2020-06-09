@@ -26,15 +26,15 @@ def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
                     TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
 
 
-def plot_train_loss(losses, fname=''):
-    x = range(0, EPOCHS, 1)
+def plot_loss(losses, t):
+    x = range(0, len(losses), 1)
     plt.clf()
     plt.plot(x, losses)
     plt.xlabel('epoch')
-    plt.ylabel('Train MSE')
+    plt.ylabel('{} MSE'.format(t))
     plt.title('Train loss values, MSE')
-    plt.savefig('plots/train_loss_{}_{}epochs_{}bs_lr{}.png'.format(
-                    TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
+    plt.savefig('plots/{}_loss_{}_{}epochs_{}bs_lr{}.png'.format(
+                    t, TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
 
 
 # parse command line options
@@ -132,38 +132,33 @@ for epoch in range(EPOCHS):
 print('\nTraining end')
 
 if SAVE_MODEL:
-    time = datetime.now().strftime("%d_%m_%y_%H_%M")
-    model_fname = 'models/regressive_cnn_{}_{}_ptm'.format(time, TIME_FRAME)
+    time = datetime.now().strftime("%d-%m_%H-%M")
+    model_fname = 'models/regressive_cnn_{}_{}.ptm'.format(time, TIME_FRAME)
     torch.save(net.state_dict(), model_fname)
     print('saving model in {}'.format(model_fname))
 
 print('\nBegin testing!')
 mse_total = 0
-orig, pre = [], []
-orig_de, pre_de = [], []
+orig, pre, test_losses = [], [], []
 for batch_index, batch in enumerate(tqdm(test_loader)):
     imgs = batch['image'].to(device)
     weathers = batch['weather_data'].to(device)
     pms = batch['pm_label'].to(device)
-    # make predictions and store label + predicted
+    # make predictions
     predicted = net(imgs.float(), weathers)
-    orig.append(pms.item())
-    pre.append(predicted.item())
     # denormalize values
     predicted = dataset.min_pm + pm_range * predicted
     pms = dataset.min_pm + pm_range * pms
+    # store to plot
+    orig.append(pms.item())
+    pre.append(predicted.item())
     # calc MSE value
-    mse_total += criterion(pms.reshape(1, 1).float(), predicted)
-    # store values to plot
-    orig_de.append(pms.item())
-    pre_de.append(predicted.item())
-mse_total /= len(test_loader)
-print('mean MSE value on test data = {}\n'.format(float(mse_total)))
+    test_losses.append(criterion(pms.reshape(1, 1).float(), predicted).item())
+print('mean MSE value on test data = {}\n'.format(np.mean(test_losses)))
 
 if MAKE_PLOTS:
     plot_predictions(np.array(orig), np.array(pre),
-                     '{} normalized data'.format(TIME_FRAME), 100, 'norm')
-    plot_predictions(np.array(orig_de), np.array(pre_de),
-                     '{} denormalized data'.format(TIME_FRAME), 100, 'denorm')
-    plot_train_loss(train_losses)
+                     '{} data'.format(TIME_FRAME), 100, 'denormalized')
+    plot_loss(train_losses, 'train')
+    #plot_loss(test_losses, 'test')
     print('\nPredictions plot saved!')
