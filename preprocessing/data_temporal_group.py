@@ -59,7 +59,11 @@ for f in tqdm(os.listdir(cells_csv_path)):
             dtype=dtypes
         ).set_index('time')
         df = df.drop('id', axis=1)
-        group_daily(df).to_csv(csv_path[:-4] + '_daily.csv', index_label='time')
-        group_weekly(df).to_csv(csv_path[:-4] + '_weekly.csv', index_label='time')
-        group_monthly(df).to_csv(csv_path[:-4] + '_monthly.csv', index_label='time')
-        group_seasonally(df).to_csv(csv_path[:-4] + '_seasonally.csv', index_label='time')
+        group_daily(df).to_csv(csv_path[:-4] + '_daily.csv',
+                               index_label='time')
+        group_weekly(df).to_csv(csv_path[:-4] + '_weekly.csv',
+                                index_label='time')
+        group_monthly(df).to_csv(csv_path[:-4] + '_monthly.csv',
+                                 index_label='time')
+        group_seasonally(df).to_csv(csv_path[:-4] + '_seasonally.csv',
+                                    index_label='time')

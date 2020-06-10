@@ -154,11 +154,12 @@ for batch_index, batch in enumerate(tqdm(test_loader)):
     pre.append(predicted.item())
     # calc MSE value
     test_losses.append(criterion(pms.reshape(1, 1).float(), predicted).item())
-print('mean MSE value on test data = {}\n'.format(np.mean(test_losses)))
+print('MSE = {:.2f}\nmean error = {:.2f} over values in scale [{:.2f}, {:.2f}]'
+      .format(np.mean(test_losses), np.sqrt(np.mean(test_losses)),
+              dataset.min_pm, dataset.max_pm))
 
 if MAKE_PLOTS:
     plot_predictions(np.array(orig), np.array(pre),
                      '{} data'.format(TIME_FRAME), 100, 'denormalized')
     plot_loss(train_losses, 'train')
-    #plot_loss(test_losses, 'test')
     print('\nPredictions plot saved!')

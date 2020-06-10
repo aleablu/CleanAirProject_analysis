@@ -39,7 +39,8 @@ k = 0
 for i in tqdm(range(len(mat))):
     for j in range(len(mat[i])):
         zoom, x, y = get_tile(mat[i][j][0], mat[i][j][1], 15)
-        r = requests.get('https://tiles.wmflabs.org/osm-no-labels/' + str(zoom) + '/' + str(x) + '/' + str(y) + '.png', stream=True)
+        r = requests.get('https://tiles.wmflabs.org/osm-no-labels/' + str(zoom)
+                         + '/' + str(x) + '/' + str(y) + '.png', stream=True)
         if r.status_code == 200:
             with open('big_cells_images/' + str(k) + '.png', 'wb') as f:
                 r.raw.decode_content = True

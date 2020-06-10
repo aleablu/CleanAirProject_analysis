@@ -29,7 +29,7 @@ class RegressiveCNN(nn.Module):
 
         # qua comincia MLP, dopo layer di Flatten ho output.shape[1]*output.shape[2]*output.shape[3]
         # input features (vettore colonna) + 5 parametri meteo
-        self.fc1 = nn.Linear(in_features=48*4*4 + 5, out_features=256)
+        self.fc1 = nn.Linear(in_features=48*4*4 + 7, out_features=256)
         #self.dropout1 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(in_features=256, out_features=256)
         #self.dropout2 = nn.Dropout(0.2)

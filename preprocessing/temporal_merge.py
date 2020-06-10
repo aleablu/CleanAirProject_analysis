@@ -29,36 +29,36 @@ def merge(files_list, offset, time):
             df = df.append(sample, ignore_index=True)
     print('Saving merged csv')
     print(df)
-    df.to_csv('../data/merged_' + time + '.csv', index=False)
+    df.to_csv('data/merged_' + time + '.csv', index=False)
 
 
-cells_csv_path = '../data/cells_samples_csv'
-cells_imgs_path = '../data/cells_images'
+cells_csv_path = 'data/cells_samples_csv'
+cells_imgs_path = 'data/cells_images'
 
 # build lists of files for each time period
 daily, weekly, monthly, seasonally = [], [], [], []
 
-p_d = re.compile('[0-9]+_daily.csv')
+#p_d = re.compile('[0-9]+_daily.csv')
 p_w = re.compile('[0-9]+_weekly.csv')
-p_m = re.compile('[0-9]+_monthly.csv')
-p_s = re.compile('[0-9]+_seasonally.csv')
+#p_m = re.compile('[0-9]+_monthly.csv')
+#p_s = re.compile('[0-9]+_seasonally.csv')
 
 for f in os.listdir(cells_csv_path):
-    if p_d.match(f):
-        daily.append(f)
-    elif p_w.match(f):
+    #if p_d.match(f):
+    #    daily.append(f)
+    if p_w.match(f):
         weekly.append(f)
-    elif p_m.match(f):
-        monthly.append(f)
-    elif p_s.match(f):
-        seasonally.append(f)
+    #elif p_m.match(f):
+    #    monthly.append(f)
+    #elif p_s.match(f):
+    #    seasonally.append(f)
 
 # merge files and save them
-print('Merging daily files!')
-merge(daily, 10, 'daily')
+#print('Merging daily files!')
+#merge(daily, 10, 'daily')
 print('Merging weekly files!')
 merge(weekly, 11, 'weekly')
-print('Merging monthly files!')
-merge(monthly, 12, 'monthly')
-print('Merging seasonally files!')
-merge(seasonally, 15, 'seasonally')
+#print('Merging monthly files!')
+#merge(monthly, 12, 'monthly')
+#print('Merging seasonally files!')
+#merge(seasonally, 15, 'seasonally')
