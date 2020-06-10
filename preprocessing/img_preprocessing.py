@@ -7,15 +7,15 @@ import matplotlib.pyplot as plt
 
 out_size = 64
 
-cells_images_dir_path = 'cells_images'
+cells_images_dir_path = 'data/big_cells_images'
 
-imgs_out_path = 'cells_images/resized_64'
+imgs_out_path = 'data/big_cells_images/resized_64'
 
 for f in tqdm(os.listdir(cells_images_dir_path)):
 	if 'png' in f:
 		try:
 			path = os.path.join(cells_images_dir_path, f)
-			# load image
+                	# load image
 			img = cv2.imread(path, cv2.IMREAD_COLOR)
 			# resize image
 			img = cv2.resize(img, (out_size, out_size))
@@ -24,4 +24,5 @@ for f in tqdm(os.listdir(cells_images_dir_path)):
 			
 		except Exception as e:
 			print(e)
-			pass 
+			pass
+
