@@ -11,25 +11,25 @@ class RegressiveCNN(nn.Module):
         super(RegressiveCNN, self).__init__()
         # immagine rgb -> 3 canali input iniziale 12 out vuol dire
         # identificare 12 features
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=24, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=12, kernel_size=3, stride=1, padding=1)
         self.relu1 = nn.ReLU()  # output.shape = 24x64x64
         #self.pool1 = nn.MaxPool2d(kernel_size=2)  # output.shape = 24x32x32
 
-        self.conv2 = nn.Conv2d(in_channels=24, out_channels=48, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=12, out_channels=24, kernel_size=3, stride=1, padding=1)
         self.relu2 = nn.ReLU()  # output.shape = 24x32x32
         self.pool2 = nn.MaxPool2d(kernel_size=2)  # output.shape = 24x16x16
 
-        self.conv3 = nn.Conv2d(in_channels=48, out_channels=48, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=24, out_channels=48, kernel_size=3, stride=1, padding=1)
         self.relu3 = nn.ReLU()  # output.shape = 36x16x16
         #self.pool3 = nn.MaxPool2d(kernel_size=2)  # output.shape = 36x8x8
 
-        self.conv4 = nn.Conv2d(in_channels=48, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(in_channels=48, out_channels=96, kernel_size=3, stride=1, padding=1)
         self.relu4 = nn.ReLU()  # output.shape = 48x8x8
         #self.pool4 = nn.MaxPool2d(kernel_size=2)  # output.shape = 48x4x4
 
         # qua comincia MLP, dopo layer di Flatten ho output.shape[1]*output.shape[2]*output.shape[3]
         # input features (vettore colonna) + 5 parametri meteo + lat,lon cella
-        self.fc1 = nn.Linear(in_features=32*32*32 + 7, out_features=256)
+        self.fc1 = nn.Linear(in_features=96*32*32 + 7, out_features=256)
         #self.dropout1 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(in_features=256, out_features=256)
         #self.dropout2 = nn.Dropout(0.2)
@@ -50,7 +50,7 @@ class RegressiveCNN(nn.Module):
 
         output = self.conv2(output)
         output = self.relu2(output)
-        #output = self.pool2(output)
+        output = self.pool2(output)
         # self.show_image(to_pil(output[0].cpu()))
         # print('pool2 --> {}'.format(output.shape))
 
