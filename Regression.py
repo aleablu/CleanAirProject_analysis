@@ -59,7 +59,7 @@ MAKE_PLOTS = args.make_plots
 
 # load data
 csv_path = 'data/merged_{}.csv'.format(TIME_FRAME)
-imgs_path = 'data/cells_images/resized_64'
+imgs_path = 'data/big_cells_images/resized_64'
 
 # transforms img in Tensor, backend uses Pillow that normalizes img in [0,1]
 transform = transforms.ToTensor()
