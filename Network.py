@@ -29,7 +29,7 @@ class RegressiveCNN(nn.Module):
 
         # qua comincia MLP, dopo layer di Flatten ho output.shape[1]*output.shape[2]*output.shape[3]
         # input features (vettore colonna) + 5 parametri meteo + lat,lon cella
-        self.fc1 = nn.Linear(in_features=48*16*16 + 8, out_features=256)
+        self.fc1 = nn.Linear(in_features=48*16*16, out_features=256)
         #self.dropout1 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(in_features=256, out_features=256)
         #self.dropout2 = nn.Dropout(0.2)
@@ -70,10 +70,10 @@ class RegressiveCNN(nn.Module):
         # feature map che i dati meteo
 
         output = torch.flatten(output, start_dim=1)
-        weather = torch.flatten(weather, start_dim=1)
+        #weather = torch.flatten(weather, start_dim=1)
         # print(output.shape)
         # mi aspetto che weather sia un vettore colonna con i dati meteo
-        output = torch.cat((output, weather), dim=1)
+        #output = torch.cat((output, weather), dim=1)
 
         output = self.fc1(output)
         #output = self.dropout1(output)
