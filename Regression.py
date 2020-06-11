@@ -94,7 +94,7 @@ net.to(device)
 
 # init loss function and optimizer for backpropagation
 criterion = nn.MSELoss()
-optimizer = Adam(net.parameters(), lr=LEARNING_RATE)
+optimizer = Adam(net.parameters(), lr=LEARNING_RATE, amsgrad=True)
 pm_range = dataset.max_pm - dataset.min_pm
 train_losses = []
 for epoch in range(EPOCHS):
