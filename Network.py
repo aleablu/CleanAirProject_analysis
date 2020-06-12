@@ -19,11 +19,11 @@ class RegressiveCNN(nn.Module):
         self.relu2 = nn.ReLU()  # output.shape = 24x64x64
         #self.pool2 = nn.MaxPool2d(kernel_size=2)  # output.shape = 24x32x32
 
-        self.conv3 = nn.Conv2d(in_channels=24, out_channels=48, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=24, out_channels=24, kernel_size=3, stride=1, padding=1)
         self.relu3 = nn.ReLU()  # output.shape = 48x64x64
         #self.pool3 = nn.MaxPool2d(kernel_size=2)  # output.shape = 48x32x32
 
-        self.conv4 = nn.Conv2d(in_channels=48, out_channels=48, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(in_channels=24, out_channels=12, kernel_size=3, stride=1, padding=1)
         self.relu4 = nn.ReLU()  # output.shape = 48x64x64
         self.pool4 = nn.MaxPool2d(kernel_size=2)  # output.shape = 48x32x32
 
@@ -36,7 +36,7 @@ class RegressiveCNN(nn.Module):
         # layer Bilinear, B(x1, x2) = x1^t * M * x2 + b
         # M, b imparati da Bilinear, x1=feature map
         # x2=dati, dati = dati_meteo + coord_cella + indice_temporale
-        self.bilinear = nn.Bilinear(48*32*32, 8, 512)
+        self.bilinear = nn.Bilinear(12*32*32, 8, 512)
         #self.dropout1 = nn.Dropout(0.2)
         self.fc1 = nn.Linear(in_features=512, out_features=512)
         #self.dropout2 = nn.Dropout(0.2)
