@@ -32,11 +32,11 @@ class RegressiveCNN(nn.Module):
         self.pool4 = nn.MaxPool2d(kernel_size=2)
 
 
-        self.w1 = nn.Linear(in_features=8, out_features=32)
-        self.w_bn1 = nn.BatchNorm1d(num_features=32)
-        self.w2 = nn.Linear(in_features=32, out_features=64)
-        self.w_bn2 = nn.BatchNorm1d(num_features=64)
-        self.w3 = nn.Linear(in_features=64, out_features=64)
+        self.w1 = nn.Linear(in_features=8, out_features=16)
+        self.w_bn1 = nn.BatchNorm1d(num_features=16)
+        self.w2 = nn.Linear(in_features=16, out_features=32)
+        self.w_bn2 = nn.BatchNorm1d(num_features=32)
+        self.w3 = nn.Linear(in_features=32, out_features=64)
         self.w_bn3 = nn.BatchNorm1d(num_features=64)
         self.w4 = nn.Linear(in_features=64, out_features=32)
         self.w_bn4 = nn.BatchNorm1d(num_features=32)
@@ -46,16 +46,18 @@ class RegressiveCNN(nn.Module):
         # M, b imparati da Bilinear, x1=feature map
         # x2=dati, dati = dati_meteo + coord_cella + indice_temporale
         self.bilinear = nn.Bilinear(12*16*16, 8, 256)
-        self.mlp_bn1 = nn.BatchNorm1d(num_features=256)
+        self.bilin_bn = nn.BatchNorm1d(num_features=256)
         #self.dropout1 = nn.Dropout(0.2)
         self.fc1 = nn.Linear(in_features=256, out_features=128)
-        self.mlp_bn2 = nn.BatchNorm1d(num_features=128)
+        self.mlp_bn1 = nn.BatchNorm1d(num_features=128)
         #self.dropout2 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(in_features=128, out_features=64)
-        self.mlp_bn3 = nn.BatchNorm1d(num_features=64)
+        self.mlp_bn2 = nn.BatchNorm1d(num_features=64)
         self.fc3 = nn.Linear(in_features=64, out_features=32)
-        self.mlp_bn4 = nn.BatchNorm1d(num_features=32)
-        self.fc4 = nn.Linear(in_features=32, out_features=1)
+        self.mlp_bn3 = nn.BatchNorm1d(num_features=32)
+        self.fc4 = nn.Linear(in_features=32, out_features=16)
+        self.mlp_bn4 = nn.BatchNorm1d(num_features=16)
+        self.fc5 = nn.Linear(in_features=16, out_features=1)
 
     def show_image(self, img):
         npimg = img
@@ -112,15 +114,17 @@ class RegressiveCNN(nn.Module):
         #output = torch.cat((output, weather), dim=1)
 
         output = self.bilinear(output, weather)
-        output = self.mlp_bn1(output)
+        output = self.bilin_bn(output)
         #output = self.dropout1(output)
         output = self.fc1(output)
-        output = self.mlp_bn2(output)
+        output = self.mlp_bn1(output)
         #output = self.dropout2(output)
         output = self.fc2(output)
-        output = self.mlp_bn3(output)
+        output = self.mlp_bn2(output)
         output = self.fc3(output)
-        output = self.mlp_bn4(output)
+        output = self.mlp_bn3(output)
         output = self.fc4(output)
-        
+        output = self.mlp_bn4(output)
+        output = self.fc5(output)
+
         return output
