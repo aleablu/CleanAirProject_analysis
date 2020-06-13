@@ -47,6 +47,7 @@ parser.add_argument('--epochs', type=int, dest='epochs', default=20)
 parser.add_argument('--time-frame', type=str, dest='time', default='daily')
 parser.add_argument('-p', action='store_true',
                     dest='make_plots', default=False)
+parser.add_Argument('-u', type=str, dest='model_to_muse', default='none')
 args = parser.parse_args()
 
 # parameters
