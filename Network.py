@@ -31,7 +31,7 @@ class RegressiveCNN(nn.Module):
         self.relu4 = nn.ReLU()
         self.pool4 = nn.MaxPool2d(kernel_size=2)
 
-
+        # weather MLP
         self.w1 = nn.Linear(in_features=8, out_features=16)
         self.w_bn1 = nn.BatchNorm1d(num_features=16)
         self.w2 = nn.Linear(in_features=16, out_features=32)
@@ -45,7 +45,7 @@ class RegressiveCNN(nn.Module):
         # layer Bilinear, B(x1, x2) = x1^t * M * x2 + b
         # M, b imparati da Bilinear, x1=feature map
         # x2=dati, dati = dati_meteo + coord_cella + indice_temporale
-        self.bilinear = nn.Bilinear(12*16*16, 8, 256)
+        self.bilinear = nn.Bilinear(12*32*32, 8, 256)
         self.bilin_bn = nn.BatchNorm1d(num_features=256)
         self.dropout1 = nn.Dropout(0.2)
         self.fc1 = nn.Linear(in_features=256, out_features=128)
