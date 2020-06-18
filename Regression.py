@@ -41,7 +41,7 @@ def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
                     TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
 
 
-def plot_tr_ts_loss(tr_losses, ts_losses, t):
+def plot_tr_ts_loss(tr_losses, ts_losses):
     x = range(0, len(tr_losses), 1)
     plt.clf()
     plt.plot(x, tr_losses, label='train loss')
@@ -49,8 +49,8 @@ def plot_tr_ts_loss(tr_losses, ts_losses, t):
     plt.xlabel('epoch')
     plt.ylabel('{} MSE'.format(t))
     plt.title('Train loss values, MSE')
-    plt.savefig('plots/{}_loss_{}_{}epochs_{}bs_lr{}.png'.format(
-                    t, TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
+    plt.savefig('plots/train_vs_test_loss_{}_{}epochs_{}bs_lr{}.png'.format(
+                    TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
 
 
 def load_data():
@@ -152,7 +152,7 @@ if MODEL_TO_USE == 'none':
             losses.append(loss.item())
         mean_loss = np.mean(losses)
         print('Mean loss = {}'.format(mean_loss))
-        if epoch % 100 == 0:
+        if epoch % 2 == 0:
             loss, _, _ = test(test_loader)
             tr_test_losses.append(loss)
             train_losses.append(mean_loss)
@@ -166,8 +166,8 @@ if MODEL_TO_USE == 'none':
         print('saving model in {}'.format(model_fname))
 
     if MAKE_PLOTS:
-        plot_tr_ts_loss(train_losses, tr_test_losses, 'train')
-        print('\nTrain loss plot saved!')
+        plot_tr_ts_loss(train_losses, tr_test_losses)
+        print('\nTrain vs test loss plot saved!')
 else:
     # load already trained model
     net.load_state_dict(torch.load(MODEL_TO_USE))
