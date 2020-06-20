@@ -43,7 +43,7 @@ def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
 
 
 def plot_tr_ts_loss(tr_losses, ts_losses):
-    x = range(0, len(tr_losses), GAP)
+    x = [i*GAP for i in range(1, len(tr_losses))]
     plt.clf()
     plt.plot(x, tr_losses, label='train loss')
     plt.plot(x, ts_losses, label='test loss')
@@ -51,6 +51,16 @@ def plot_tr_ts_loss(tr_losses, ts_losses):
     plt.title('Train loss values, MSE')
     plt.legend()
     plt.savefig('plots/train_vs_test_loss_{}_{}epochs_{}bs_lr{}.png'.format(
+                    TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
+
+
+def plot_tr_ts_mae(maes):
+    x = range(0, len(maes), GAP)
+    plt.clf()
+    plt.plot(x, maes)
+    plt.xlabel('epoch')
+    plt.title('MAE value on test set during training')
+    plt.savefig('plots/train_vs_test_mae_{}_{}epochs_{}bs_lr{}.png'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
 
 
@@ -78,6 +88,7 @@ def load_data():
 def test(loader):
     net.eval()
     loss = 0
+    mae = 0
     orig, pred = [], []
     for batch_index, batch in enumerate(tqdm(loader)):
         imgs = batch['image'].to(device)
@@ -92,9 +103,12 @@ def test(loader):
         pred.append(predicted.item())
         # calc MSE value
         loss += criterion(pms.reshape(1, 1).float(), predicted).item()
+        # calc MAE value
+        mae += torch.abs(pms - predicted).item()
     loss /= len(loader)
+    mae /= len(loader)
     net.train()
-    return loss, orig, pred
+    return loss, orig, pred, mae
 
 
 # parameters
@@ -128,7 +142,7 @@ pm_range = dataset.max_pm - dataset.min_pm
 if MODEL_TO_USE == 'none':
     # init optimizer for backpropagation
     optimizer = Adam(net.parameters(), lr=LEARNING_RATE)
-    train_losses, tr_test_losses = [], []
+    train_losses, tr_test_losses, tr_test_mae = [], [], []
     for epoch in range(EPOCHS):
         print('Epoch {}'.format(epoch))
         losses = []
@@ -155,8 +169,10 @@ if MODEL_TO_USE == 'none':
         mean_loss = np.mean(losses)
         print('Mean loss = {}'.format(mean_loss))
         if epoch % GAP == 0:
-            loss, _, _ = test(test_loader)
+            loss, _, _, mae = test(test_loader)
+            print('MSE = {}, MAE = {}'.format(loss, mae))
             tr_test_losses.append(loss)
+            tr_test_mae.append(mae)
             train_losses.append(mean_loss)
 
     print('\nTraining end')
@@ -169,14 +185,15 @@ if MODEL_TO_USE == 'none':
 
     if MAKE_PLOTS:
         plot_tr_ts_loss(train_losses, tr_test_losses)
+        plot_tr_ts_mae(tr_test_mae)
         print('\nTrain vs test loss plot saved!')
 else:
     # load already trained model
     net.load_state_dict(torch.load(MODEL_TO_USE))
 
-print('\nBegin testing!')
-
-loss, orig, pred = test(test_loader)
+print('\nTEST')
+loss, orig, pred, mae = test(test_loader)
+print('MSE = {}, MAE = {}'.format(loss, mae))
 
 
 if MAKE_PLOTS:
