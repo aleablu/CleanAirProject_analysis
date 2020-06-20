@@ -26,7 +26,7 @@ def parse_options():
     parser.add_argument('-p', action='store_true',
                         dest='make_plots', default=False)
     parser.add_argument('-u', type=str, dest='model_to_use', default='none')
-    parser.add_argument('--gap', type=str, dest='gap', default=50)
+    parser.add_argument('--gap', type=int, dest='gap', default=50)
     args = parser.parse_args()
     return args
 
