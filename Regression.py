@@ -26,6 +26,7 @@ def parse_options():
     parser.add_argument('-p', action='store_true',
                         dest='make_plots', default=False)
     parser.add_argument('-u', type=str, dest='model_to_use', default='none')
+    parser.add_argument('--gap', type=str, dest='gap', default=50)
     args = parser.parse_args()
     return args
 
@@ -42,13 +43,13 @@ def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
 
 
 def plot_tr_ts_loss(tr_losses, ts_losses):
-    x = range(0, len(tr_losses), 1)
+    x = range(0, len(tr_losses), GAP)
     plt.clf()
     plt.plot(x, tr_losses, label='train loss')
     plt.plot(x, ts_losses, label='test loss')
     plt.xlabel('epoch')
-    plt.ylabel('{} MSE'.format(t))
     plt.title('Train loss values, MSE')
+    plt.legend()
     plt.savefig('plots/train_vs_test_loss_{}_{}epochs_{}bs_lr{}.png'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
 
@@ -105,6 +106,7 @@ SAVE_MODEL = args.save_model
 TIME_FRAME = args.time
 MAKE_PLOTS = args.make_plots
 MODEL_TO_USE = args.model_to_use
+GAP = args.gap
 
 train_loader, test_loader, dataset = load_data()
 
@@ -152,7 +154,7 @@ if MODEL_TO_USE == 'none':
             losses.append(loss.item())
         mean_loss = np.mean(losses)
         print('Mean loss = {}'.format(mean_loss))
-        if epoch % 2 == 0:
+        if epoch % GAP == 0:
             loss, _, _ = test(test_loader)
             tr_test_losses.append(loss)
             train_losses.append(mean_loss)
