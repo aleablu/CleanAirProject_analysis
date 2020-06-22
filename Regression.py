@@ -43,7 +43,9 @@ def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
 
 
 def plot_tr_ts_loss(tr_losses, ts_losses):
-    x = [i*GAP for i in range(1, len(tr_losses))]
+    x = []
+    for i in range(0, len(tr_losses)):
+        x.append(i * GAP)
     plt.clf()
     plt.plot(x, tr_losses, label='train loss')
     plt.plot(x, ts_losses, label='test loss')
@@ -55,7 +57,9 @@ def plot_tr_ts_loss(tr_losses, ts_losses):
 
 
 def plot_tr_ts_mae(maes):
-    x = range(0, len(maes), GAP)
+    x = []
+    for i in range(0, len(maes)):
+        x.append(i * GAP)
     plt.clf()
     plt.plot(x, maes)
     plt.xlabel('epoch')
