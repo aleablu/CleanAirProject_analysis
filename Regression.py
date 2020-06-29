@@ -50,7 +50,7 @@ def plot_tr_ts_loss(tr_losses, ts_losses):
     plt.plot(x, tr_losses, label='train loss')
     plt.plot(x, ts_losses, label='test loss')
     plt.xlabel('epoch')
-    plt.title('Train loss values, MSE')
+    plt.title('MSE value on test set during training, {}'.format(TIME_FRAME))
     plt.legend()
     plt.savefig('plots/train_vs_test_loss_{}_{}epochs_{}bs_lr{}.png'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
@@ -63,7 +63,7 @@ def plot_tr_ts_mae(maes):
     plt.clf()
     plt.plot(x, maes)
     plt.xlabel('epoch')
-    plt.title('MAE value on test set during training')
+    plt.title('MAE value on test set during training, {}'.format(TIME_FRAME))
     plt.savefig('plots/train_vs_test_mae_{}_{}epochs_{}bs_lr{}.png'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
 
