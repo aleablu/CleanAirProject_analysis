@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-EPOCHS=1000
+EPOCHS=500
 
 python3 Regression.py --time-frame daily --epochs $EPOCHS -p -s
 
