@@ -13,6 +13,8 @@ from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 
+from sklearn.metrics import r2_score
+
 
 def parse_options():
     # parse command line options
@@ -42,30 +44,27 @@ def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
                     TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
 
 
-def plot_tr_ts_loss(tr_losses, ts_losses):
+def plot_test_during_train(d):
     x = []
-    for i in range(0, len(tr_losses)):
+    for i in range(0, len(d['rmse'])):
         x.append(i * GAP)
     plt.clf()
-    plt.plot(x, tr_losses, label='train loss')
-    plt.plot(x, ts_losses, label='test loss')
+    plt.plot(x, train_rmse, label='train RMSE')
+    plt.plot(x, d['rmse'], label='test RMSE')
     plt.xlabel('epoch')
-    plt.title('MSE value on test set during training, {}'.format(TIME_FRAME))
+    plt.title('RMSE value on test set during training, {}'.format(TIME_FRAME))
     plt.legend()
-    plt.savefig('plots/train_vs_test_loss_{}_{}epochs_{}bs_lr{}.png'.format(
+    plt.savefig('plots/train_vs_test_RMSE_{}_{}epochs_{}bs_lr{}.png'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
-
-
-def plot_tr_ts_mae(maes):
-    x = []
-    for i in range(0, len(maes)):
-        x.append(i * GAP)
     plt.clf()
-    plt.plot(x, maes)
+    plt.plot(x, train_r2, label='train r2_Score')
+    plt.plot(x, d['r2'], label='test r2_Score')
     plt.xlabel('epoch')
-    plt.title('MAE value on test set during training, {}'.format(TIME_FRAME))
-    plt.savefig('plots/train_vs_test_mae_{}_{}epochs_{}bs_lr{}.png'.format(
+    plt.title('r^2-score value on test set during training, {}'.format(TIME_FRAME))
+    plt.legend()
+    plt.savefig('plots/train_vs_test_r2_{}_{}epochs_{}bs_lr{}.png'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
+
 
 
 def load_data():
@@ -89,12 +88,13 @@ def load_data():
     return train_loader, test_loader, dataset
 
 
-def test(loader):
+def test(loader, training=False):
+    # set the network in evaluation mode
     net.eval()
-    loss = 0
-    mae = 0
+    rmse, r2 = 0, 0
     orig, pred = [], []
     for batch_index, batch in enumerate(tqdm(loader)):
+        # split batch and send it to the gpu if available
         imgs = batch['image'].to(device)
         weathers = batch['weather_data'].to(device)
         pms = batch['pm_label'].to(device)
@@ -103,16 +103,20 @@ def test(loader):
         # denormalize values
         predicted = dataset.min_pm + pm_range * predicted
         pms = dataset.min_pm + pm_range * pms
+        # store original and predicted data
         orig.append(pms.item())
         pred.append(predicted.item())
-        # calc MSE value
-        loss += criterion(pms.reshape(1, 1).float(), predicted).item()
-        # calc MAE value
-        mae += torch.abs(pms - predicted).item()
-    loss /= len(loader)
-    mae /= len(loader)
-    net.train()
-    return loss, orig, pred, mae
+        # calc RMSE value
+        rmse += criterion(pms.reshape(1, 1).float(), predicted).item() ** 0.5
+    # calc mean RMSE on the test set
+    rmse /= len(loader)
+    # calc r2 score between original and predicted data, denormalized
+    r2 = r2_score(orig, pred)
+    # set network back to train mode, this method is called while training
+    if training:
+        net.train()
+    # return original and predicted data, and metrics
+    return orig, pred, rmse, r2
 
 
 # parameters
@@ -140,16 +144,18 @@ else:
 net = RegressiveCNN()
 net.to(device)
 # init loss function
-criterion = nn.MSELoss()
+#criterion = nn.MSELoss()
+criterion = nn.L1Loss()
 pm_range = dataset.max_pm - dataset.min_pm
 
 if MODEL_TO_USE == 'none':
     # init optimizer for backpropagation
     optimizer = Adam(net.parameters(), lr=LEARNING_RATE)
-    train_losses, tr_test_losses, tr_test_mae = [], [], []
+    train_rmse, train_r2 = [], []
+    test_during_train = {'rmse': [], 'r2': []}
     for epoch in range(EPOCHS):
         print('Epoch {}'.format(epoch))
-        losses = []
+        rmses, r2s = [], []
         for batch_index, batch in enumerate(tqdm(train_loader)):
             # get image, weather params and pm label and move these
             # tensors to gpu if available
@@ -169,38 +175,39 @@ if MODEL_TO_USE == 'none':
             loss.backward()
             optimizer.step()
             # store loss value
-            losses.append(loss.item())
-        mean_loss = np.mean(losses)
-        print('Mean loss = {}'.format(mean_loss))
+            rmses.append(loss.item())
+            r2s.append(r2_score(pms.reshape(len(batch['pm_label']), 1).cpu().detach().numpy(),
+                       predicted_pms.reshape(len(batch['pm_label']), 1).cpu().detach().numpy()))
+        mean_rmse = np.mean(rmses)
+        mean_r2 = np.mean(r2s)
+        print('RMSE = {}, r2_score = {}'.format(mean_rmse, mean_r2))
         if epoch % GAP == 0:
-            loss, _, _, mae = test(test_loader)
-            print('MSE = {}, MAE = {}'.format(loss, mae))
-            tr_test_losses.append(loss)
-            tr_test_mae.append(mae)
-            train_losses.append(mean_loss)
+            _, _, rmse, r2 = test(test_loader, training=True)
+            print('TEST --> RMSE = {}, r2_score = {}'.format(rmse, r2))
+            test_during_train['rmse'].append(rmse)
+            test_during_train['r2'].append(r2)
+            train_rmse.append(mean_rmse)
+            train_r2.append(mean_r2)
 
     print('\nTraining end')
-
     if SAVE_MODEL:
         time = datetime.now().strftime("%d-%m_%H-%M")
         model_fname = 'models/regressive_cnn_{}_{}.ptm'.format(time, TIME_FRAME)
         torch.save(net.state_dict(), model_fname)
         print('saving model in {}'.format(model_fname))
-
     if MAKE_PLOTS:
-        plot_tr_ts_loss(train_losses, tr_test_losses)
-        plot_tr_ts_mae(tr_test_mae)
-        print('\nTrain vs test loss plot saved!')
+        plot_test_during_train(test_during_train)
+        print('\nMetrics over test set during train plot saved!')
 else:
     # load already trained model
     net.load_state_dict(torch.load(MODEL_TO_USE))
 
 print('\nTEST')
-loss, orig, pred, mae = test(test_loader)
-print('MSE = {}, MAE = {}'.format(loss, mae))
-
+orig, pred, rmse, r2 = test(test_loader)
 
 if MAKE_PLOTS:
     plot_predictions(np.array(orig), np.array(pred),
                      '{} data'.format(TIME_FRAME), 100, 'denormalized')
     print('\nPredictions plot saved!')
+
+print('RMSE = {}, r2_score = {}'.format(rmse, r2))
