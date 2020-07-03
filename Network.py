@@ -33,15 +33,15 @@ class RegressiveCNN(nn.Module):
         # self.pool4 = nn.MaxPool2d(kernel_size=2)
 
         # weather MLP
-        self.w1 = nn.Linear(in_features=8, out_features=16)
-        self.w_bn1 = nn.BatchNorm1d(num_features=16)
-        self.w2 = nn.Linear(in_features=16, out_features=32)
-        self.w_bn2 = nn.BatchNorm1d(num_features=32)
-        self.w3 = nn.Linear(in_features=32, out_features=64)
-        self.w_bn3 = nn.BatchNorm1d(num_features=64)
-        self.w4 = nn.Linear(in_features=64, out_features=32)
-        self.w_bn4 = nn.BatchNorm1d(num_features=32)
-        self.w5 = nn.Linear(in_features=32, out_features=8)
+        self.w1 = nn.Linear(in_features=8, out_features=32)
+        self.w_bn1 = nn.BatchNorm1d(num_features=32)
+        self.w2 = nn.Linear(in_features=32, out_features=64)
+        self.w_bn2 = nn.BatchNorm1d(num_features=64)
+        self.w3 = nn.Linear(in_features=64, out_features=128)
+        self.w_bn3 = nn.BatchNorm1d(num_features=128)
+        self.w4 = nn.Linear(in_features=128, out_features=64)
+        self.w_bn4 = nn.BatchNorm1d(num_features=64)
+        self.w5 = nn.Linear(in_features=64, out_features=8)
 
         # layer Bilinear, B(x1, x2) = x1^t * M * x2 + b
         # M, b imparati da Bilinear, x1=feature map
