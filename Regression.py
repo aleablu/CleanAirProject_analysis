@@ -33,15 +33,17 @@ def parse_options():
     return args
 
 
-def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
+def plot_predictions(labels, predictions, test_rmse, test_r2, num_data_to_plot):
     x = range(0, num_data_to_plot)
     plt.clf()
     plt.plot(x, labels[:num_data_to_plot], label='original')
     plt.plot(x, predictions[:num_data_to_plot], label='predicted')
-    plt.title(title)
+    plt.xlabel('RMSE = {:.3f}, $r^2$ = {:.3f}'.format(test_rmse, test_r2))
+    plt.ylabel('UFP concentration (UFP/$cm^3$)')
+    plt.title('{} predictions'.format(TIME_FRAME))
     plt.legend()
-    plt.savefig('plots/predictions_{}_{}epochs_{}bs_{}.png'.format(
-                    TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
+    plt.savefig('plots/predictions_{}_{}epochs_{}bs.png'.format(
+                    TIME_FRAME, EPOCHS, BATCH_SIZE))
 
 
 def plot_test_during_train(d):
@@ -206,8 +208,7 @@ print('\nTEST')
 orig, pred, rmse, r2 = test(test_loader)
 
 if MAKE_PLOTS:
-    plot_predictions(np.array(orig), np.array(pred),
-                     '{} data'.format(TIME_FRAME), 100, 'denormalized')
+    plot_predictions(np.array(orig), np.array(pred), rmse, r2, 100)
     print('\nPredictions plot saved!')
 
 print('RMSE = {}, r2_score = {}'.format(rmse, r2))
