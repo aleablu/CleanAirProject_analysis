@@ -42,7 +42,7 @@ def plot_predictions(labels, predictions, test_rmse, test_r2, num_data_to_plot):
     plt.ylabel('UFP concentration (UFP/$cm^3$)')
     plt.title('{} predictions'.format(TIME_FRAME))
     plt.legend()
-    plt.savefig('plots/predictions_{}_{}epochs_{}bs.png'.format(
+    plt.savefig('plots/predictions_{}_{}epochs_{}bs.svg'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE))
 
 
@@ -64,7 +64,7 @@ def plot_test_during_train(d):
     plt.xlabel('epoch')
     plt.title('r^2-score value on test set during training, {}'.format(TIME_FRAME))
     plt.legend()
-    plt.savefig('plots/train_vs_test_r2_{}_{}epochs_{}bs_lr{}.png'.format(
+    plt.savefig('plots/train_vs_test_r2_{}_{}epochs_{}bs_lr{}.svg'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
 
 

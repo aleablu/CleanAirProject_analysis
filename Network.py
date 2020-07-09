@@ -46,19 +46,19 @@ class RegressiveCNN(nn.Module):
         # layer Bilinear, B(x1, x2) = x1^t * M * x2 + b
         # M, b imparati da Bilinear, x1=feature map
         # x2=dati, dati = dati_meteo + coord_cella + indice_temporale
-        self.bilinear = nn.Bilinear(6*32*32, 8, 256)
-        self.bilin_bn = nn.BatchNorm1d(num_features=256)
+        self.bilinear = nn.Bilinear(6*32*32, 8, 128)
+        self.bilin_bn = nn.BatchNorm1d(num_features=128)
         self.dropout1 = nn.Dropout(0.2)
-        self.fc1 = nn.Linear(in_features=256, out_features=128)
-        self.mlp_bn1 = nn.BatchNorm1d(num_features=128)
+        self.fc1 = nn.Linear(in_features=128, out_features=64)
+        self.mlp_bn1 = nn.BatchNorm1d(num_features=64)
         self.dropout2 = nn.Dropout(0.2)
-        self.fc2 = nn.Linear(in_features=128, out_features=64)
-        self.mlp_bn2 = nn.BatchNorm1d(num_features=64)
-        self.fc3 = nn.Linear(in_features=64, out_features=32)
-        self.mlp_bn3 = nn.BatchNorm1d(num_features=32)
-        self.fc4 = nn.Linear(in_features=32, out_features=16)
-        self.mlp_bn4 = nn.BatchNorm1d(num_features=16)
-        self.fc5 = nn.Linear(in_features=16, out_features=1)
+        self.fc2 = nn.Linear(in_features=64, out_features=32)
+        self.mlp_bn2 = nn.BatchNorm1d(num_features=32)
+        self.fc3 = nn.Linear(in_features=32, out_features=16)
+        self.mlp_bn3 = nn.BatchNorm1d(num_features=16)
+        self.fc4 = nn.Linear(in_features=16, out_features=8)
+        self.mlp_bn4 = nn.BatchNorm1d(num_features=8)
+        self.fc5 = nn.Linear(in_features=8, out_features=1)
 
     def forward(self, x, weather):
         output = self.conv1(x)
