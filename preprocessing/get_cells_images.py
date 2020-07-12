@@ -13,25 +13,28 @@ def get_tile(lat_deg, lon_deg, zoom):
 
 
 def gen_cells():
-    num_celle_lungo = 144
-    num_celle_corto = 130
-    lungo = []
-    # sommo, mi sto muovendo verso est
-    for i in range(0, num_celle_lungo):
-        lungo.append((47.437045, 8.438894 + (0.001309 * i)))
+	num_celle_lungo = 28 # 144
+	num_celle_corto = 26 # 130
 
-    corto = []
-    # sottraggo, mi sto muovendo verso sud
-    for i in range(0, num_celle_corto):
-        corto.append((47.437045 + (-0.001037 * i), 8.438894))
-    m = []
-    for i in range(num_celle_corto):
-        m.append([])
-        for j in range(num_celle_lungo):
-            start = corto[i]
-            point = (start[0], start[1] + (0.001309 * j))
-            m[i].append(point)
-    return m
+	five_hundred_meters = 0.006372
+	lungo = []
+	# sommo, mi sto muovendo verso est
+	for i in range(0, num_celle_lungo):
+		lungo.append((47.437045, 8.438894 + ( five_hundred_meters * i)))
+
+	corto = []
+	# sottraggo, mi sto muovendo verso sud
+	for i in range(0, num_celle_corto):
+		corto.append((47.437045 + (-five_hundred_meters * i), 8.438894))
+
+	m = []
+	for i in range(num_celle_corto):
+		m.append([])
+		for j in range(num_celle_lungo):
+			start = corto[i]
+			point = (start[0], start[1] + ( five_hundred_meters * j))
+			m[i].append(point)
+	return m
 
 
 mat = gen_cells()
@@ -42,7 +45,7 @@ for i in tqdm(range(len(mat))):
         r = requests.get('https://tiles.wmflabs.org/osm-no-labels/' + str(zoom)
                          + '/' + str(x) + '/' + str(y) + '.png', stream=True)
         if r.status_code == 200:
-            with open('big_cells_images/' + str(k) + '.png', 'wb') as f:
+            with open('data/500m_big_cells_images/' + str(k) + '.png', 'wb') as f:
                 r.raw.decode_content = True
                 shutil.copyfileobj(r.raw, f)
                 k += 1

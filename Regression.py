@@ -34,12 +34,12 @@ def parse_options():
     return args
 
 
-def plot_predictions(labels, predictions, test_rmse, test_r2, num_data_to_plot):
+def plot_predictions(labels, predictions, test_rmse, test_r2, test_fac2, num_data_to_plot):
     x = range(0, num_data_to_plot)
     plt.clf()
     plt.plot(x, labels[:num_data_to_plot], label='original')
     plt.plot(x, predictions[:num_data_to_plot], label='predicted')
-    plt.xlabel('RMSE = {:.3f}, $r^2$ = {:.3f}'.format(test_rmse, test_r2))
+    plt.xlabel('RMSE = {:.3f}, $r^2$ = {:.3f}, FAC2 = {:.3f}'.format(test_rmse, test_r2, test_fac2))
     plt.ylabel('UFP concentration (UFP/$cm^3$)')
     plt.title('{} predictions'.format(TIME_FRAME))
     plt.legend()
@@ -234,7 +234,7 @@ print('\nTEST')
 orig, pred, rmse, r2, fac2 = test(test_loader)
 
 if MAKE_PLOTS:
-    plot_predictions(np.array(orig), np.array(pred), rmse, r2, 100)
+    plot_predictions(np.array(orig), np.array(pred), rmse, r2, fac2, 100)
     # scatter plot
     plt.clf()
     plt.scatter(orig, pred)
