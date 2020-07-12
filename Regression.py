@@ -12,6 +12,7 @@ from CleanAirDataset import CleanAirDataset
 from tqdm import tqdm
 
 import matplotlib.pyplot as plt
+plt.style.use('ggplot')
 
 from sklearn.metrics import r2_score
 
@@ -33,15 +34,17 @@ def parse_options():
     return args
 
 
-def plot_predictions(labels, predictions, title, num_data_to_plot, fname):
+def plot_predictions(labels, predictions, test_rmse, test_r2, num_data_to_plot):
     x = range(0, num_data_to_plot)
     plt.clf()
     plt.plot(x, labels[:num_data_to_plot], label='original')
     plt.plot(x, predictions[:num_data_to_plot], label='predicted')
-    plt.title(title)
+    plt.xlabel('RMSE = {:.3f}, $r^2$ = {:.3f}'.format(test_rmse, test_r2))
+    plt.ylabel('UFP concentration (UFP/$cm^3$)')
+    plt.title('{} predictions'.format(TIME_FRAME))
     plt.legend()
-    plt.savefig('plots/predictions_{}_{}epochs_{}bs_{}.png'.format(
-                    TIME_FRAME, EPOCHS, BATCH_SIZE, fname))
+    plt.savefig('plots/predictions_{}_{}epochs_{}bs.svg'.format(
+                    TIME_FRAME, EPOCHS, BATCH_SIZE))
 
 
 def plot_test_during_train(d):
@@ -54,15 +57,23 @@ def plot_test_during_train(d):
     plt.xlabel('epoch')
     plt.title('RMSE value on test set during training, {}'.format(TIME_FRAME))
     plt.legend()
-    plt.savefig('plots/train_vs_test_RMSE_{}_{}epochs_{}bs_lr{}.png'.format(
+    plt.savefig('plots/train_vs_test_RMSE_{}_{}epochs_{}bs_lr{}.svg'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
     plt.clf()
-    plt.plot(x, train_r2, label='train r2_Score')
-    plt.plot(x, d['r2'], label='test r2_Score')
+    plt.plot(x, train_r2, label='train $R^2$')
+    plt.plot(x, d['r2'], label='test $R^2$')
     plt.xlabel('epoch')
-    plt.title('r^2-score value on test set during training, {}'.format(TIME_FRAME))
+    plt.title('$R^2$ score on test set during training, {}'.format(TIME_FRAME))
     plt.legend()
-    plt.savefig('plots/train_vs_test_r2_{}_{}epochs_{}bs_lr{}.png'.format(
+    plt.savefig('plots/train_vs_test_r2_{}_{}epochs_{}bs_lr{}.svg'.format(
+                    TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
+    plt.clf()
+    plt.plot(x, train_r2, label='train FAC2')
+    plt.plot(x, d['r2'], label='test FAC2')
+    plt.xlabel('epoch')
+    plt.title('FAC2 score on test set during training, {}'.format(TIME_FRAME))
+    plt.legend()
+    plt.savefig('plots/train_vs_test_FAC2_{}_{}epochs_{}bs_lr{}.svg'.format(
                     TIME_FRAME, EPOCHS, BATCH_SIZE, LEARNING_RATE))
 
 
@@ -87,6 +98,16 @@ def load_data():
                                  shuffle=True, num_workers=4)
     return train_loader, test_loader, dataset
 
+# calc FAC2 score
+def fac2_score(labels, predictions):
+    labels = np.array(labels)
+    predictions = np.array(predictions)
+    c = 0
+    rates = predictions / labels
+    for r in rates:
+        if r >= 0.5 and r<=2.0:
+            c += 1
+    return c/len(labels)
 
 def test(loader, training=False):
     # set the network in evaluation mode
@@ -112,11 +133,13 @@ def test(loader, training=False):
     rmse /= len(loader)
     # calc r2 score between original and predicted data, denormalized
     r2 = r2_score(orig, pred)
+    # calc FAC2 score
+    fac2 = fac2_score(orig, pred)
     # set network back to train mode, this method is called while training
     if training:
         net.train()
     # return original and predicted data, and metrics
-    return orig, pred, rmse, r2
+    return orig, pred, rmse, r2, fac2
 
 
 # parameters
@@ -151,11 +174,11 @@ pm_range = dataset.max_pm - dataset.min_pm
 if MODEL_TO_USE == 'none':
     # init optimizer for backpropagation
     optimizer = Adam(net.parameters(), lr=LEARNING_RATE)
-    train_rmse, train_r2 = [], []
-    test_during_train = {'rmse': [], 'r2': []}
+    train_rmse, train_r2, train_fac2 = [], [], []
+    test_during_train = {'rmse': [], 'r2': [], 'fac2': []}
     for epoch in range(EPOCHS):
         print('Epoch {}'.format(epoch))
-        rmses, r2s = [], []
+        rmses, r2s, fac2s = [], [], []
         for batch_index, batch in enumerate(tqdm(train_loader)):
             # get image, weather params and pm label and move these
             # tensors to gpu if available
@@ -178,16 +201,21 @@ if MODEL_TO_USE == 'none':
             rmses.append(loss.item())
             r2s.append(r2_score(pms.reshape(len(batch['pm_label']), 1).cpu().detach().numpy(),
                        predicted_pms.reshape(len(batch['pm_label']), 1).cpu().detach().numpy()))
+            fac2s.append(fac2_score(pms.reshape(len(batch['pm_label']), 1).cpu().detach().numpy(),
+                       predicted_pms.reshape(len(batch['pm_label']), 1).cpu().detach().numpy()))
         mean_rmse = np.mean(rmses)
         mean_r2 = np.mean(r2s)
+        mean_fac2 = np.mean(fac2s)
         print('RMSE = {}, r2_score = {}'.format(mean_rmse, mean_r2))
         if epoch % GAP == 0:
-            _, _, rmse, r2 = test(test_loader, training=True)
-            print('TEST --> RMSE = {}, r2_score = {}'.format(rmse, r2))
+            _, _, rmse, r2, fac2= test(test_loader, training=True)
+            print('TEST --> RMSE = {:.2f}, R2 = {:.2f}, FAC2 = {:.2f}'.format(rmse, r2, fac2))
             test_during_train['rmse'].append(rmse)
             test_during_train['r2'].append(r2)
+            test_during_train['fac2'].append(fac2)
             train_rmse.append(mean_rmse)
             train_r2.append(mean_r2)
+            train_fac2.append(mean_fac2)
 
     print('\nTraining end')
     if SAVE_MODEL:
@@ -203,11 +231,14 @@ else:
     net.load_state_dict(torch.load(MODEL_TO_USE))
 
 print('\nTEST')
-orig, pred, rmse, r2 = test(test_loader)
+orig, pred, rmse, r2, fac2 = test(test_loader)
 
 if MAKE_PLOTS:
-    plot_predictions(np.array(orig), np.array(pred),
-                     '{} data'.format(TIME_FRAME), 100, 'denormalized')
+    plot_predictions(np.array(orig), np.array(pred), rmse, r2, 100)
+    # scatter plot
+    plt.clf()
+    plt.scatter(orig, pred)
+    plt.savefig('plots/predictions_{}_scatter.svg'.format(TIME_FRAME))
     print('\nPredictions plot saved!')
 
-print('RMSE = {}, r2_score = {}'.format(rmse, r2))
+print('RMSE = {:.2f}, r2_score = {:.2f}, FAC2 = {:.2f}'.format(rmse, r2, fac2))
