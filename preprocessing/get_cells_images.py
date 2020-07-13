@@ -45,7 +45,7 @@ for i in tqdm(range(len(mat))):
         r = requests.get('https://tiles.wmflabs.org/osm-no-labels/' + str(zoom)
                          + '/' + str(x) + '/' + str(y) + '.png', stream=True)
         if r.status_code == 200:
-            with open('data/500m_big_cells_images/' + str(k) + '.png', 'wb') as f:
+            with open('data/500m_cells_images/' + str(k) + '.png', 'wb') as f:
                 r.raw.decode_content = True
                 shutil.copyfileobj(r.raw, f)
                 k += 1

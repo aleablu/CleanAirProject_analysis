@@ -80,8 +80,8 @@ def plot_test_during_train(d):
 
 def load_data():
     # load data
-    csv_path = 'data/merged_{}.csv'.format(TIME_FRAME)
-    imgs_path = 'data/big_cells_images/resized_128'
+    csv_path = 'data/500m_merged_{}.csv'.format(TIME_FRAME)
+    imgs_path = 'data/500m_cells_images/resized_128'
     # init dataset class
     dataset = CleanAirDataset(csv_path, imgs_path)
     # split: train 80%, test 20%
