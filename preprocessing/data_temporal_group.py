@@ -45,10 +45,11 @@ dtypes = {
     'wind_direction': np.int8,
     'wind_speed': np.int8
 }
-cells_csv_path = '../data/cells_samples_csv'
+cells_csv_path = 'cells_samples_csv'
 pattern = re.compile("[0-9]+.csv")
 for f in tqdm(os.listdir(cells_csv_path)):
     if pattern.match(f):
+        #print(f)
         # read csv file for this cell
         csv_path = os.path.join(cells_csv_path, f)
         df = pd.read_csv(

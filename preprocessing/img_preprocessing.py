@@ -5,9 +5,9 @@ from tqdm import tqdm
 
 out_size = 128
 
-cells_images_dir_path = 'data/500m_cells_images'
+cells_images_dir_path = 'data/250m_cells_images'
 
-imgs_out_path = 'data/500m_cells_images/resized_128'
+imgs_out_path = 'data/250m_cells_images/resized_128'
 
 for f in tqdm(os.listdir(cells_images_dir_path)):
 	if 'png' in f:

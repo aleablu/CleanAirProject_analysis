@@ -32,7 +32,7 @@ def merge(files_list, offset, time):
     df.to_csv('data/merged_' + time + '.csv', index=False)
 
 
-cells_csv_path = 'data/500m_cells_csv/temp'
+cells_csv_path = 'cells_samples_csv'
 cells_imgs_path = 'data/500m_cells_images'
 
 # build lists of files for each time period

@@ -13,26 +13,28 @@ def get_tile(lat_deg, lon_deg, zoom):
 
 
 def gen_cells():
-	num_celle_lungo = 28 # 144
-	num_celle_corto = 26 # 130
-
-	five_hundred_meters = 0.006372
+	# num_celle_lungo = 28 # 500
+	# num_celle_corto = 26
+	num_celle_lungo = 56 # 250
+	num_celle_corto = 52
+	# meters = 0.006372 # 500 metri
+	meters = 0.003186 # 250 metri
 	lungo = []
 	# sommo, mi sto muovendo verso est
 	for i in range(0, num_celle_lungo):
-		lungo.append((47.437045, 8.438894 + ( five_hundred_meters * i)))
+		lungo.append((47.437045, 8.438894 + ( meters * i)))
 
 	corto = []
 	# sottraggo, mi sto muovendo verso sud
 	for i in range(0, num_celle_corto):
-		corto.append((47.437045 + (-five_hundred_meters * i), 8.438894))
+		corto.append((47.437045 + (-meters * i), 8.438894))
 
 	m = []
 	for i in range(num_celle_corto):
 		m.append([])
 		for j in range(num_celle_lungo):
 			start = corto[i]
-			point = (start[0], start[1] + ( five_hundred_meters * j))
+			point = (start[0], start[1] + ( meters * j))
 			m[i].append(point)
 	return m
 
@@ -45,7 +47,7 @@ for i in tqdm(range(len(mat))):
         r = requests.get('https://tiles.wmflabs.org/osm-no-labels/' + str(zoom)
                          + '/' + str(x) + '/' + str(y) + '.png', stream=True)
         if r.status_code == 200:
-            with open('data/500m_cells_images/' + str(k) + '.png', 'wb') as f:
+            with open('data/250m_cells_images/' + str(k) + '.png', 'wb') as f:
                 r.raw.decode_content = True
                 shutil.copyfileobj(r.raw, f)
                 k += 1

@@ -3,26 +3,28 @@ import numpy as np
 
 
 def gen_cells():
-	num_celle_lungo = 28
-	num_celle_corto = 26
-
-	five_hundred_meters = 0.006372
+	# num_celle_lungo = 28 # 500
+	# num_celle_corto = 26
+	num_celle_lungo = 56 # 250
+	num_celle_corto = 52
+	# meters = 0.006372 # 500 metri
+	meters = 0.003186 # 250 metri
 	lungo = []
 	# sommo, mi sto muovendo verso est
 	for i in range(0, num_celle_lungo):
-		lungo.append((47.437045, 8.438894 + ( five_hundred_meters * i)))
+		lungo.append((47.437045, 8.438894 + ( meters * i)))
 
 	corto = []
 	# sottraggo, mi sto muovendo verso sud
 	for i in range(0, num_celle_corto):
-		corto.append((47.437045 + (-five_hundred_meters * i), 8.438894))
+		corto.append((47.437045 + (-meters * i), 8.438894))
 
 	m = []
 	for i in range(num_celle_corto):
 		m.append([])
 		for j in range(num_celle_lungo):
 			start = corto[i]
-			point = (start[0], start[1] + ( five_hundred_meters * j))
+			point = (start[0], start[1] + ( meters * j))
 			m[i].append(point)
 	return m
 
@@ -43,12 +45,12 @@ def add_id(df, cells):
     print(df)
 
 
-df_d = pd.read_csv('data/500m_merged_daily.csv')
-df_w = pd.read_csv('data/500m_merged_weekly.csv')
+df_d = pd.read_csv('data/250m_merged_daily.csv')
+df_w = pd.read_csv('data/250m_merged_weekly.csv')
 df_w['time'] = df_w['time'].astype('int32')
 df_w['cell_id'] = df_w['cell_id'].astype('int32')
-df_m = pd.read_csv('data/500m_merged_monthly.csv')
-df_s = pd.read_csv('data/500m_merged_seasonally.csv')
+df_m = pd.read_csv('data/250m_merged_monthly.csv')
+df_s = pd.read_csv('data/250m_merged_seasonally.csv')
 
 mat = gen_cells()
 
