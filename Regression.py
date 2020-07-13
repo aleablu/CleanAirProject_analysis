@@ -35,7 +35,10 @@ def parse_options():
 
 
 def plot_predictions(labels, predictions, test_rmse, test_r2, test_fac2, num_data_to_plot):
-    x = range(0, num_data_to_plot)
+    if num_data_to_plot < predictions.shape[0]:
+        x = range(0, num_data_to_plot)
+    else:
+        x = range(0, predictions.shape[0])
     plt.clf()
     plt.plot(x, labels[:num_data_to_plot], label='original')
     plt.plot(x, predictions[:num_data_to_plot], label='predicted')
