@@ -2,29 +2,30 @@ import pandas as pd
 import numpy as np
 
 
-# returns matrix with center of each cell, evenly distanced
 def gen_cells():
-    num_celle_lungo = 144
-    num_celle_corto = 130
+	num_celle_lungo = 28
+	num_celle_corto = 26
 
-    lungo = []
-    # sommo, mi sto muovendo verso est
-    for i in range(0, num_celle_lungo):
-        lungo.append((47.437045, 8.438894 + (0.001309 * i)))
+	five_hundred_meters = 0.006372
+	lungo = []
+	# sommo, mi sto muovendo verso est
+	for i in range(0, num_celle_lungo):
+		lungo.append((47.437045, 8.438894 + ( five_hundred_meters * i)))
 
-    corto = []
-    # sottraggo, mi sto muovendo verso sud
-    for i in range(0, num_celle_corto):
-        corto.append((47.437045 + (-0.001037 * i), 8.438894))
+	corto = []
+	# sottraggo, mi sto muovendo verso sud
+	for i in range(0, num_celle_corto):
+		corto.append((47.437045 + (-five_hundred_meters * i), 8.438894))
 
-    m = []
-    for i in range(num_celle_corto):
-        m.append([])
-        for j in range(num_celle_lungo):
-            start = corto[i]
-            point = (start[0], start[1] + (0.001309 * j))
-            m[i].append(point)
-    return m
+	m = []
+	for i in range(num_celle_corto):
+		m.append([])
+		for j in range(num_celle_lungo):
+			start = corto[i]
+			point = (start[0], start[1] + ( five_hundred_meters * j))
+			m[i].append(point)
+	return m
+
 
 
 def add_id(df, cells):
@@ -42,12 +43,12 @@ def add_id(df, cells):
     print(df)
 
 
-df_d = pd.read_csv('data/merged_daily.csv')
-df_w = pd.read_csv('data/merged_weekly.csv')
+df_d = pd.read_csv('data/500m_merged_daily.csv')
+df_w = pd.read_csv('data/500m_merged_weekly.csv')
 df_w['time'] = df_w['time'].astype('int32')
 df_w['cell_id'] = df_w['cell_id'].astype('int32')
-df_m = pd.read_csv('data/merged_monthly.csv')
-df_s = pd.read_csv('data/merged_seasonally.csv')
+df_m = pd.read_csv('data/500m_merged_monthly.csv')
+df_s = pd.read_csv('data/500m_merged_seasonally.csv')
 
 mat = gen_cells()
 
