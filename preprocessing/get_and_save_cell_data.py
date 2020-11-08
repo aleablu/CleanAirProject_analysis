@@ -32,19 +32,19 @@ for i in tqdm(range(n_cells)):
 		# print('id = ' + str(i) + ', n_data = ' + str(n_data))
 		# s = time.time()
 		# create dataframe from cell's data
-		df = pd.DataFrame(list(db.data.find(query))).set_index('time')
+		#df = pd.DataFrame(list(db.data.find(query))).set_index('time')
 		# drop not needed data
 
-		df = df.drop(['_id', 'hdop', 'location', 'diam_particles', 'ldsa'], axis=1)
-		df = df.sort_index()
-		fname = 'cells_samples_csv/' + str(i) + '.csv'
+		#df = df.drop(['_id', 'hdop', 'location', 'diam_particles', 'ldsa'], axis=1)
+		#df = df.sort_index()
+		#fname = 'cells_samples_csv/' + str(i) + '.csv'
 		# save to csv
-		df.to_csv(fname)
+		#df.to_csv(fname)
 		# save reference to csv in mongo
-		#db.cells.update_one({'id': i}, {'$set': {'labeled': True, 'samples_csv_path': fname}})
+		db.cells.update_one({'id': i}, {'$set': {'labeled': True}})
 		# print('samples loaded, duration ' + str(time.time() - s) + ' seconds')
-	#else:
+	else:
 		# no data in cell, labeled = False and no csv path	
-		#db.cells.update_one({'id': i}, {'$set': {'labeled': False, 'samples_csv_path': ''}})
+		db.cells.update_one({'id': i}, {'$set': {'labeled': False}})
 
 print('end, duration ' + str(time.time() - start_time) + ' seconds')

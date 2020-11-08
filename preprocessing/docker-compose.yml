@@ -5,4 +5,4 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - /home/ale/Work/Tesi/mongodb_data:/data/db
+      - /home/Progetti/CleanAir_mongo_data:/data/db

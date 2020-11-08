@@ -53,10 +53,11 @@ def load_cells_mongo(db):
 	for i in range(len(mat)):
 		for j in range(len(mat[i])):
 			# calc cell corner coord
-			fifty_meters = 0.001309
-			five_hundred_meters = 0.006372
-			nw = [mat[i][j][0] + five_hundred_meters, mat[i][j][1] - five_hundred_meters]
-			se = [mat[i][j][0] - five_hundred_meters, mat[i][j][1] + five_hundred_meters]
+			# meters = 0.001309 # 100m
+			meters = 0.003186 # 250m
+			# meters = 0.006372 # 500m
+			nw = [mat[i][j][0] + meters, mat[i][j][1] - meters]
+			se = [mat[i][j][0] - meters, mat[i][j][1] + meters]
 			ne = [nw[0], se[1]]
 			sw = [se[0], nw[1]]
 			coord = [nw, ne, se, sw, nw]
@@ -96,7 +97,7 @@ def load_dataset_mongo(db):
 	
 	db.data.create_index([('location', GEOSPHERE)])
 	i = 1
-	for data in pd.read_csv('../backups/whole_data_dropped_nans.csv', na_values=['Nan'], parse_dates=['time'], date_parser=dateparse, dtype=dtypes, chunksize=1000000):
+	for data in pd.read_csv('../data/whole_data_dropped_nans.csv', na_values=['Nan'], parse_dates=['time'], date_parser=dateparse, dtype=dtypes, chunksize=1000000):
 		batch = []
 		for index, row in data.iterrows():
 			batch.append({
@@ -128,7 +129,7 @@ db_mongo = client.cleanair  # create new db object called 'cleanair'
 
 load_cells_mongo(db_mongo)  # load cells on mongodb
 
-#load_dataset_mongo(db_mongo)
+load_dataset_mongo(db_mongo)
 
 
 # zoom, x, y = get_tile(47.437045, 8.438894, 16)
